@@ -1,75 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8">
-    <title>Trivia VR - Prototipo</title>
+    <title>Trivia VR - Configuración</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
-    
+
+    <style>
+      /* ESTILOS PARA LA PANTALLA DE INICIO (LOGIN) */
+      body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; }
+      
+      #login-screen {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999; /* Asegura que esté encima de todo */
+        color: white;
+      }
+
+      .card {
+        background: rgba(0, 0, 0, 0.8);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        max-width: 400px;
+        width: 90%;
+      }
+
+      h1 { margin-top: 0; color: #fdbb2d; }
+      
+      label { display: block; margin-top: 15px; text-align: left; font-size: 0.9em; color: #aaa; }
+      select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border-radius: 5px;
+        border: none;
+        font-size: 16px;
+      }
+
+      button#btn-start {
+        margin-top: 30px;
+        padding: 15px 40px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      button#btn-start:hover { transform: scale(1.05); background-color: #34ce57; }
+      
+      /* Ocultar el botón VR por defecto hasta que configuren */
+      .a-enter-vr-button { display: none; } 
+    </style>
+
     <script>
-      // Lógica simple del juego
+      // LÓGICA DEL JUEGO
       AFRAME.registerComponent('game-logic', {
         init: function () {
-          var el = this.el; // El botón
+          var el = this.el; 
           var textPanel = document.querySelector('#pregunta-texto');
-          var imgPanel = document.querySelector('#imagen-pregunta');
           
-          // Base de datos de prueba
-          var preguntas = [
-            { txt: "¿Cual es la capital de Peru?", img: "#img1" },
-            { txt: "¿En que año llego el hombre a la luna?", img: "#img2" },
-            { txt: "¡Ganaste! Esperando nuevo juego...", img: "#img1" }
-          ];
-          var index = 0;
-
-          // Evento al hacer clic/golpear el botón
+          // Escuchar el evento 'click' (que se activa con el pellizco de la mano)
           el.addEventListener('click', function () {
-            // Sonido o lógica de "quién ganó el turno" iría aquí
-            console.log("¡Botón presionado!");
+            console.log("¡Botón presionado con la mano!");
             
-            // Cambiar pregunta (simulación)
-            index = (index + 1) % preguntas.length;
-            textPanel.setAttribute('value', preguntas[index].txt);
+            // Animación manual simple
+            el.setAttribute('animation', 'property: position; to: 0 0.45 0; dur: 100; dir: alternate; loop: 1');
             
-            // Aquí cambiarías la imagen real
-            // imgPanel.setAttribute('src', preguntas[index].img); 
+            // Cambiar texto
+            textPanel.setAttribute('value', "¡Respuesta Registrada!\nEsperando siguiente turno...");
+            textPanel.setAttribute('color', '#00FF00'); // Texto verde
+            
+            setTimeout(() => {
+                 textPanel.setAttribute('value', "¿Siguiente Pregunta?");
+                 textPanel.setAttribute('color', 'white');
+            }, 2000);
           });
         }
       });
+
+      // LÓGICA DE LA INTERFAZ 2D
+      function iniciarJuego() {
+        // 1. Obtener datos del formulario
+        const idioma = document.getElementById('idioma').value;
+        const paisOrigen = document.getElementById('pais-origen').value;
+        const paisTrivia = document.getElementById('pais-trivia').value;
+        
+        console.log(`Configuración: ${idioma} | Jugador: ${paisOrigen} | Trivia: ${paisTrivia}`);
+
+        // 2. Ocultar pantalla de login
+        document.getElementById('login-screen').style.display = 'none';
+
+        // 3. Mostrar el botón nativo de "Enter VR" de A-Frame y simular click si es posible
+        // O simplemente dejar que el usuario le de al botón de gafas que aparecerá abajo.
+        var vrButton = document.querySelector('.a-enter-vr-button');
+        if(vrButton) vrButton.style.display = 'block';
+
+        // 4. Actualizar texto de bienvenida en VR
+        const textoVR = document.querySelector('#pregunta-texto');
+        textoVR.setAttribute('value', `¡Bienvenido jugador de ${paisOrigen}!\nTrivia sobre: ${paisTrivia}`);
+      }
     </script>
   </head>
   <body>
-    <a-scene>
+
+    <div id="login-screen">
+      <div class="card">
+        <h1>TRIVIA VR</h1>
+        <p>Configura tu partida</p>
+        
+        <label>Idioma:</label>
+        <select id="idioma">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+
+        <label>Tu País (Origen):</label>
+        <select id="pais-origen">
+          <option value="PE">Perú</option>
+          <option value="MX">México</option>
+          <option value="CO">Colombia</option>
+          <option value="AR">Argentina</option>
+        </select>
+
+        <label>País de la Trivia (Tema):</label>
+        <select id="pais-trivia">
+          <option value="MUNDIAL">Cultura General</option>
+          <option value="PE">Perú</option>
+          <option value="MX">México</option>
+        </select>
+
+        <button id="btn-start" onclick="iniciarJuego()">ENTRAR AL ESTUDIO</button>
+      </div>
+    </div>
+
+    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+      
       <a-assets>
         <img id="cartel-bg" src="https://cdn.aframe.io/examples/ui/ui-panel.png">
-        </a-assets>
+      </a-assets>
 
-      <a-entity environment="preset: tron; grid: 1x1; gridColor: orange; skyColor: #111"></a-entity>
+      <a-entity environment="preset: starry; grid: none; skyColor: #0b0c10; groundColor: #1f2833"></a-entity>
 
-      <a-entity>
-        <a-camera position="0 1.6 0">
-          <a-cursor color="yellow" fuse="false"></a-cursor>
-        </a-camera>
-        <a-entity laser-controls="hand: right"></a-entity>
-        <a-entity laser-controls="hand: left"></a-entity>
+      <a-light type="directional" position="-1 1 1" intensity="0.5"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
+
+      <a-entity id="rig" position="0 0 0">
+        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false"></a-camera>
+        
+        <a-entity hand-controls="hand: left; handModelStyle: highPoly; color: #ffcccc"></a-entity>
+        
+        <a-entity hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc" 
+                  laser-controls="hand: right"
+                  raycaster="objects: .clickable; far: 10; showLine: true; lineColor: red; lineOpacity: 0.5"></a-entity>
       </a-entity>
 
       <a-entity position="0 2.2 -3">
         <a-curvedimage src="#cartel-bg" height="3.0" radius="5.7" theta-length="72"
-                       rotation="0 144 0" scale="0.8 0.8 0.8"></a-curvedimage>
+                       rotation="0 144 0" scale="0.8 0.8 0.8" color="#fff"></a-curvedimage>
         
-        <a-text id="pregunta-texto" value="¿Estas listo para jugar?\nPresiona el boton rojo."
-                font="kelsonsans" align="center" width="6" position="0 0.5 0.1" color="white"></a-text>
-        
-        <a-image id="imagen-pregunta" color="gray" width="1.5" height="1" position="0 -0.5 0.2"></a-image>
+        <a-text id="pregunta-texto" value="Configura la partida en la pantalla inicial..."
+                font="kelsonsans" align="center" width="6" position="0 0.5 0.1" color="#333"></a-text>
+                
+        <a-image id="imagen-pregunta" color="#333" width="1.5" height="1" position="0 -0.5 0.2" opacity="0.3"></a-image>
       </a-entity>
 
       <a-entity position="0 0.8 -2">
-        <a-cylinder color="#444" height="1" radius="0.15"></a-cylinder>
+        <a-cylinder color="#222" height="1" radius="0.15"></a-cylinder>
         
         <a-cylinder id="boton-juego" game-logic class="clickable"
-                    color="#FF0000" height="0.1" radius="0.2" position="0 0.55 0"
-                    animation="property: position; from: 0 0.55 0; to: 0 0.45 0; startEvents: click; dur: 100; dir: alternate; loop: 1">
+                    color="#FF0000" height="0.1" radius="0.2" position="0 0.55 0">
         </a-cylinder>
         
         <a-text value="PRESIONAR" align="center" position="0 0.2 0.3" width="2" rotation="-45 0 0"></a-text>
