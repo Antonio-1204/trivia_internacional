@@ -2,81 +2,120 @@
 <html lang="es">
   <head>
     <meta charset="utf-8">
-    <title>Trivia VR - ESAN</title>
+    <title>Trivia VR - ESAN 360</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
 
     <script>
-      // GESTOR DEL JUEGO
+      // ==========================================
+      // BASE DE DATOS DE TEXTOS E IDIOMAS
+      // ==========================================
+      const TRADUCCIONES = {
+        'ES': { 
+            titulo: "SELECCIONA TU IDIOMA", 
+            pais_select: "ELIGE TU EQUIPO",
+            start: "JUGAR",
+            pregunta_demo: "¿Capital de Peru?",
+            btn_txt: "RESPONDER"
+        },
+        'EN': { 
+            titulo: "SELECT YOUR LANGUAGE", 
+            pais_select: "CHOOSE YOUR TEAM",
+            start: "PLAY",
+            pregunta_demo: "Capital of Peru?",
+            btn_txt: "ANSWER"
+        },
+        'FR': { 
+            titulo: "CHOISISSEZ VOTRE LANGUE", 
+            pais_select: "CHOISISSEZ VOTRE ÉQUIPE",
+            start: "JOUER",
+            pregunta_demo: "Capitale du Pérou?",
+            btn_txt: "RÉPONDRE"
+        },
+        'DE': { 
+            titulo: "SPRACHE WÄHLEN", 
+            pais_select: "WÄHLEN SIE IHR TEAM",
+            start: "SPIELEN",
+            pregunta_demo: "Hauptstadt von Peru?",
+            btn_txt: "ANTWORTEN"
+        }
+      };
+
+      let idiomaActual = 'ES'; 
+
+      // ==========================================
+      // GESTOR DE ESTADOS
+      // ==========================================
       AFRAME.registerComponent('game-manager', {
         init: function () {
-          this.menu = document.querySelector('#menu-principal');
-          this.game = document.querySelector('#escenario-juego');
-          this.welcomeText = document.querySelector('#texto-bienvenida-juego');
+          this.menuIdioma = document.querySelector('#menu-idioma');
+          this.menuPais = document.querySelector('#menu-pais');
+          this.juego = document.querySelector('#escenario-juego');
           
-          this.game.setAttribute('visible', false);
-          this.game.setAttribute('position', '0 -10 0');
+          this.menuPais.setAttribute('visible', false);
+          this.menuPais.setAttribute('position', '0 -10 0');
+          this.juego.setAttribute('visible', false);
+          this.juego.setAttribute('position', '0 -10 0');
         },
-        startGame: function (pais) {
-          // Ocultar Menú
-          this.menu.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 500; easing: easeInBack');
-          
-          setTimeout(() => {
-            this.menu.setAttribute('visible', false);
-            // Mostrar Juego
-            this.game.setAttribute('visible', true);
-            this.game.setAttribute('position', '0 0 0');
-            this.game.setAttribute('animation', 'property: scale; from: 0 0 0; to: 1 1 1; dur: 1000; easing: easeOutElastic');
-            
-            this.welcomeText.setAttribute('value', `Mucha suerte!\nRepresentando a: ${pais}`);
-          }, 500);
+
+        selectLanguage: function(lang) {
+            idiomaActual = lang;
+            const textos = TRADUCCIONES[lang];
+            document.querySelector('#titulo-pais').setAttribute('value', textos.pais_select);
+            document.querySelector('#texto-start').setAttribute('value', textos.start);
+
+            this.animarTransicion(this.menuIdioma, this.menuPais);
+        },
+
+        startGame: function() {
+            const textos = TRADUCCIONES[idiomaActual];
+            document.querySelector('#pregunta-texto').setAttribute('value', textos.pregunta_demo);
+            document.querySelector('#btn-respond-text').setAttribute('value', textos.btn_txt);
+
+            this.animarTransicion(this.menuPais, this.juego);
+        },
+
+        animarTransicion: function(origen, destino) {
+            origen.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 400; easing: easeInBack');
+            setTimeout(() => {
+                origen.setAttribute('visible', false);
+                destino.setAttribute('visible', true);
+                destino.setAttribute('position', '0 0 0'); 
+                destino.setAttribute('scale', '0 0 0');
+                destino.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 800; easing: easeOutElastic');
+            }, 400);
         }
       });
 
-      // BOTONES DEL MENÚ
-      AFRAME.registerComponent('vr-button', {
+      // ==========================================
+      // COMPONENTE DE BOTONES
+      // ==========================================
+      AFRAME.registerComponent('vr-btn', {
         schema: {
-          value: {type: 'string', default: ''},
-          type: {type: 'string', default: 'pais'} 
+          action: {type: 'string'}, 
+          value: {type: 'string'}   
         },
         init: function () {
           var el = this.el;
           var data = this.data;
           
           el.addEventListener('mouseenter', function () {
-            el.setAttribute('color', '#D32F2F'); // Rojo más claro al mirar
             el.setAttribute('scale', '1.1 1.1 1.1');
+            el.setAttribute('material', 'opacity', 1); 
           });
           el.addEventListener('mouseleave', function () {
-            el.setAttribute('color', '#B61F25'); // Rojo ESAN
             el.setAttribute('scale', '1 1 1');
+            el.setAttribute('material', 'opacity', 0.9);
           });
 
           el.addEventListener('click', function () {
-            if (data.type === 'start') {
-              var manager = document.querySelector('[game-manager]').components['game-manager'];
-              manager.startGame('PERU'); 
-            } else {
-              console.log("Seleccionado: " + data.value);
+            var manager = document.querySelector('[game-manager]').components['game-manager'];
+            if (data.action === 'lang') {
+                manager.selectLanguage(data.value);
+            } else if (data.action === 'start') {
+                manager.startGame();
             }
           });
-        }
-      });
-      
-      // BOTÓN DE RESPUESTA (JUEGO)
-      AFRAME.registerComponent('trivia-button', {
-        init: function () {
-            var el = this.el;
-            el.addEventListener('click', function() {
-                el.setAttribute('animation', 'property: position; to: 0 0.45 0; dur: 100; dir: alternate; loop: 1');
-                var txt = document.querySelector('#pregunta-texto');
-                txt.setAttribute('value', '¡Respuesta Recibida!');
-                txt.setAttribute('color', '#00FF00');
-                setTimeout(() => {
-                    txt.setAttribute('value', 'Siguiente pregunta...');
-                    txt.setAttribute('color', '#333');
-                }, 2000);
-            });
         }
       });
     </script>
@@ -85,78 +124,79 @@
     <a-scene game-manager>
       
       <a-assets>
-        <img id="fondo-esan" src="PIEZA-GENERAL_3.png">
+        <img id="fondo-360-img" src="fondo360.jpg">
         <img id="logo-esan" src="ESAN.png">
         
-        <a-mixin id="texto-boton" text="align: center; color: white; width: 4; font: roboto"></a-mixin>
+        <a-mixin id="estilo-boton" geometry="primitive: box; width: 1.8; height: 0.6; depth: 0.1"
+                 material="color: #B61F25; opacity: 0.9; shader: flat"
+                 text="align: center; color: white; width: 6; font: roboto"></a-mixin>
       </a-assets>
 
-      <a-sky src="#fondo-esan" rotation="0 -90 0"></a-sky>
+      <a-sky src="#fondo-360-img" rotation="0 -90 0"></a-sky>
 
-      <a-light type="ambient" intensity="0.8"></a-light>
-      <a-light type="directional" position="-1 1 1" intensity="0.6"></a-light>
+      <a-light type="directional" position="-1 2 1" intensity="0.8"></a-light>
+      <a-light type="ambient" intensity="0.6"></a-light>
 
       <a-entity id="rig" position="0 0 0">
         <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="enabled: false">
-            <a-cursor color="yellow" raycaster="objects: .interactuable" fuse="false"></a-cursor>
+            <a-cursor color="#B61F25" raycaster="objects: .clickable" fuse="false"></a-cursor>
         </a-camera>
-        
-        <a-entity id="rightHand" 
-                  hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc"
+        <a-entity hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc"
                   laser-controls="hand: right"
-                  raycaster="objects: .interactuable; far: 5; showLine: true; lineColor: #B61F25">
-        </a-entity>
-        
+                  raycaster="objects: .clickable; far: 10; showLine: true; lineColor: #B61F25"></a-entity>
         <a-entity hand-controls="hand: left; handModelStyle: highPoly; color: #ffcccc"></a-entity>
       </a-entity>
 
-      <a-entity id="menu-principal" position="0 1.6 -2.5">
-        
-        <a-box color="white" opacity="0.9" depth="0.1" height="3" width="4.5" position="0 0 0" shadow></a-box>
-        
-        <a-image src="#logo-esan" position="0 1.1 0.06" width="1.5" height="1.5" scale="0.6 0.6 0.6"></a-image>
+      <a-entity id="menu-idioma" position="0 1.6 -4">
+        <a-image src="#logo-esan" position="0 1.8 0" width="1.5" height="1.5"></a-image>
+        <a-text value="SELECT LANGUAGE / SELECCIONA IDIOMA" align="center" position="0 0.9 0" width="7" font="exo2bold"></a-text>
 
-        <a-text value="TRIVIA INTERNACIONAL" align="center" position="0 0.6 0.07" color="#B61F25" width="7" font="exo2bold"></a-text>
-
-        <a-text value="SELECCIONA TU EQUIPO" align="center" position="0 0.2 0.07" color="#555" width="4"></a-text>
-        
-        <a-entity position="0 -0.2 0.1">
-            <a-box class="interactuable" vr-button="value: PE" position="-1 0 0" width="1.4" height="0.4" depth="0.05" color="#B61F25">
-                <a-text mixin="texto-boton" value="PERU" position="0 0 0.03"></a-text>
-            </a-box>
-            <a-box class="interactuable" vr-button="value: MX" position="1 0 0" width="1.4" height="0.4" depth="0.05" color="#B61F25">
-                <a-text mixin="texto-boton" value="MEXICO" position="0 0 0.03"></a-text>
-            </a-box>
+        <a-entity class="clickable" vr-btn="action: lang; value: ES" mixin="estilo-boton" position="-1 0.4 0">
+            <a-text value="ESPAÑOL" align="center" z-offset="0.06"></a-text>
         </a-entity>
-
-        <a-cylinder class="interactuable" vr-button="type: start" 
-                    position="0 -1.0 0.5" rotation="30 0 0" radius="0.35" height="0.1" color="#B61F25"
-                    animation="property: scale; dir: alternate; dur: 1200; to: 1.05 1.05 1.05; loop: true">
-            <a-text value="EMPEZAR" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="5" font="exo2bold"></a-text>
-        </a-cylinder>
-
+        <a-entity class="clickable" vr-btn="action: lang; value: EN" mixin="estilo-boton" position="1 0.4 0">
+            <a-text value="ENGLISH" align="center" z-offset="0.06"></a-text>
+        </a-entity>
+        <a-entity class="clickable" vr-btn="action: lang; value: FR" mixin="estilo-boton" position="-1 -0.4 0">
+            <a-text value="FRANÇAIS" align="center" z-offset="0.06"></a-text>
+        </a-entity>
+        <a-entity class="clickable" vr-btn="action: lang; value: DE" mixin="estilo-boton" position="1 -0.4 0">
+            <a-text value="DEUTSCH" align="center" z-offset="0.06"></a-text>
+        </a-entity>
       </a-entity>
 
-      <a-entity id="escenario-juego" position="0 -10 0" visible="false">
-        
-        <a-curvedimage color="#fff" height="3.0" radius="5.7" theta-length="72"
-                       rotation="0 144 0" scale="0.8 0.8 0.8" position="0 2.2 -3" opacity="0.9"></a-curvedimage>
-        
-        <a-image src="#logo-esan" position="0 3.2 -3" width="1" height="1" scale="0.5 0.5 0.5"></a-image>
+      <a-entity id="menu-pais" position="0 1.6 -4">
+        <a-text id="titulo-pais" value="ELIGE TU EQUIPO" align="center" position="0 1.0 0" width="7" font="exo2bold"></a-text>
 
-        <a-text id="texto-bienvenida-juego" value="" font="kelsonsans" align="center" width="6" position="0 2.5 -2.9" color="#B61F25"></a-text>
-        <a-text id="pregunta-texto" value="¿Cual es la capital de Francia?" font="kelsonsans" align="center" width="5" position="0 2.0 -2.9" color="#333"></a-text>
-
-        <a-entity position="0 0.8 -2">
-            <a-cylinder color="#333" height="1" radius="0.15"></a-cylinder>
-            <a-cylinder class="interactuable" trivia-button color="#B61F25" height="0.1" radius="0.2" position="0 0.55 0">
-                <a-text value="!" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="10"></a-text>
-            </a-cylinder>
+        <a-entity class="clickable" mixin="estilo-boton" position="-1 0.3 0" material="color: #333">
+            <a-text value="PERU" align="center" z-offset="0.06"></a-text>
+        </a-entity>
+        <a-entity class="clickable" mixin="estilo-boton" position="1 0.3 0" material="color: #333">
+            <a-text value="MEXICO" align="center" z-offset="0.06"></a-text>
+        </a-entity>
+        <a-entity class="clickable" mixin="estilo-boton" position="-1 -0.5 0" material="color: #333">
+            <a-text value="COLOMBIA" align="center" z-offset="0.06"></a-text>
+        </a-entity>
+        <a-entity class="clickable" mixin="estilo-boton" position="1 -0.5 0" material="color: #333">
+            <a-text value="ARGENTINA" align="center" z-offset="0.06"></a-text>
         </a-entity>
 
+        <a-cylinder class="clickable" vr-btn="action: start" 
+                    position="0 -1.5 0.5" rotation="30 0 0" radius="0.5" height="0.1" color="#4CAF50"
+                    animation="property: scale; dir: alternate; dur: 1000; to: 1.05 1.05 1.05; loop: true">
+            <a-text id="texto-start" value="JUGAR" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="6"></a-text>
+        </a-cylinder>
+      </a-entity>
+
+      <a-entity id="escenario-juego" position="0 1.6 -4">
+        <a-text id="pregunta-texto" value="¿?" align="center" position="0 1 0" width="8" font="kelsonsans"></a-text>
+        
+        <a-cylinder class="clickable" color="#B61F25" height="0.2" radius="0.4" position="0 -0.5 0"
+                    animation__click="property: position; from: 0 -0.5 0; to: 0 -0.6 0; startEvents: click; dur: 100; dir: alternate">
+             <a-text id="btn-respond-text" value="RESPONDER" align="center" rotation="-90 0 0" position="0 0.11 0"></a-text>       
+        </a-cylinder>
       </a-entity>
 
     </a-scene>
   </body>
 </html>
-
