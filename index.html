@@ -2,275 +2,381 @@
 <html lang="es">
   <head>
     <meta charset="utf-8">
-    <title>Trivia VR - Demo Final</title>
+    <title>Trivia VR - Ultimate Edition</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
 
     <script>
       // ==========================================
-      // BASE DE DATOS DE TEXTOS Y PREGUNTAS (SIN TILDES NI Ñ)
+      // BASE DE DATOS (ESTRUCTURA PARA 10 PREGUNTAS)
       // ==========================================
-      const DATOS_JUEGO = {
-        'ES': { 
-            ui: { titulo_idioma: "SELECCIONA TU IDIOMA", titulo_pais: "ELIGE TU EQUIPO", btn_jugar: "JUGAR", game_over: "¡FELICITACIONES! HAS TERMINADO." },
-            preguntas: [
-                { p: "¿Cual es el planeta mas grande del sistema solar?", 
-                  ops: ["Tierra", "Marte", "Jupiter", "Saturno"], 
-                  correcta: 2 },
-                { p: "¿En que continente se encuentra Egipto?", 
-                  ops: ["Africa", "Asia", "Europa", "America"], 
-                  correcta: 0 },
-                { p: "¿Quien pinto la Mona Lisa?", 
-                  ops: ["Picasso", "Van Gogh", "Da Vinci", "Miguel Angel"], 
-                  correcta: 2 },
-                { p: "¿Cual es el rio mas largo del mundo?", 
-                  ops: ["Nilo", "Amazonas", "Yangtse", "Misisipi"], 
-                  correcta: 1 },
-                { p: "¿Cuantos lados tiene un hexagono?", 
-                  ops: ["Cuatro", "Cinco", "Seis", "Ocho"], 
-                  correcta: 2 }
-            ]
+      const DATABASE = {
+        'ES': {
+            ui: { titulo: "SELECCIONA TU IDIOMA", elige_pais: "TEMATICA DE LA TRIVIA", score: "PUNTAJE FINAL:", restart: "VOLVER A JUGAR" },
+            paises: { 'PE': 'PERÚ', 'US': 'USA', 'FR': 'FRANCIA', 'DE': 'ALEMANIA' },
+            data: {
+                'PE': [ // 10 PREGUNTAS DE PERÚ
+                    { q: "¿Cual es la capital del Peru?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 },
+                    { q: "¿Que animal aparece en el escudo nacional?", ops: ["Llama", "Condor", "Vicuña", "Alpaca"], ans: 2 },
+                    { q: "¿En que año se descubrio Machu Picchu?", ops: ["1911", "1900", "1821", "1950"], ans: 0 },
+                    { q: "¿Cual es el rio mas largo del Peru?", ops: ["Rímac", "Amazonas", "Ucayali", "Marañon"], ans: 2 },
+                    { q: "¿Quien es el heroe del combate de Angamos?", ops: ["Bolognesi", "Quiñones", "Grau", "Ugarte"], ans: 2 },
+                    { q: "¿Cual es la moneda oficial?", ops: ["Peso", "Dolar", "Sol", "Inti"], ans: 2 },
+                    { q: "¿Donde esta el Lago Titicaca?", ops: ["Puno", "Tacna", "Loreto", "Cusco"], ans: 0 },
+                    { q: "¿Plato bandera a base de pescado crudo?", ops: ["Lomo Saltado", "Ceviche", "Cuy", "Ají de Gallina"], ans: 1 },
+                    { q: "¿Cual es la montaña mas alta?", ops: ["Misti", "Huandoy", "Huascaran", "Yerupaja"], ans: 2 },
+                    { q: "¿Ciudad conocida como la Ciudad Blanca?", ops: ["Lima", "Trujillo", "Arequipa", "Piura"], ans: 2 }
+                ],
+                'US': [ // 10 PREGUNTAS DE USA (Ejemplo breve, rellena las demás)
+                    { q: "¿Capital de Estados Unidos?", ops: ["New York", "Washington DC", "Miami", "Los Angeles"], ans: 1 },
+                    { q: "¿Moneda oficial?", ops: ["Euro", "Dolar", "Libra", "Yen"], ans: 1 },
+                    { q: "¿Primer presidente?", ops: ["Lincoln", "Washington", "Jefferson", "Kennedy"], ans: 1 },
+                    { q: "¿Donde esta la Estatua de la Libertad?", ops: ["Boston", "NY", "Chicago", "SF"], ans: 1 },
+                    { q: "¿Dia de la Independencia?", ops: ["4 Julio", "1 Enero", "25 Dic", "31 Oct"], ans: 0 },
+                    { q: "Pregunta 6 USA...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 7 USA...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 8 USA...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 9 USA...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 10 USA...", ops: ["A", "B", "C", "D"], ans: 0 }
+                ],
+                'FR': [ /* Rellenar con 10 preguntas de Francia */ 
+                    { q: "¿Capital de Francia?", ops: ["Lyon", "Paris", "Marsella", "Niza"], ans: 1 },
+                    { q: "Pregunta 2 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 3 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 4 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 5 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 6 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 7 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 8 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 9 FR...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 10 FR...", ops: ["A", "B", "C", "D"], ans: 0 }
+                ],
+                'DE': [ /* Rellenar con 10 preguntas de Alemania */
+                    { q: "¿Capital de Alemania?", ops: ["Munich", "Berlin", "Hamburgo", "Frankfurt"], ans: 1 },
+                    { q: "Pregunta 2 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 3 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 4 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 5 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 6 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 7 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 8 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 9 DE...", ops: ["A", "B", "C", "D"], ans: 0 },
+                    { q: "Pregunta 10 DE...", ops: ["A", "B", "C", "D"], ans: 0 }
+                ]
+            }
         },
-        'EN': { 
-            ui: { titulo_idioma: "SELECT YOUR LANGUAGE", titulo_pais: "CHOOSE YOUR TEAM", btn_jugar: "PLAY", game_over: "CONGRATULATIONS! YOU FINISHED." },
-            preguntas: [
-                { p: "What is the largest planet in the solar system?", 
-                  ops: ["Earth", "Mars", "Jupiter", "Saturn"], 
-                  correcta: 2 },
-                { p: "On which continent is Egypt located?", 
-                  ops: ["Africa", "Asia", "Europe", "America"], 
-                  correcta: 0 },
-                { p: "Who painted the Mona Lisa?", 
-                  ops: ["Picasso", "Van Gogh", "Da Vinci", "Michelangelo"], 
-                  correcta: 2 },
-                { p: "What is the longest river in the world?", 
-                  ops: ["Nile", "Amazon", "Yangtze", "Mississippi"], 
-                  correcta: 1 },
-                { p: "How many sides does a hexagon have?", 
-                  ops: ["Four", "Five", "Six", "Eight"], 
-                  correcta: 2 }
-            ]
-        },
-        // Se pueden añadir FR y DE con la misma estructura
+        'EN': {
+             // Aquí iría la misma estructura pero con textos en Inglés
+             ui: { titulo: "SELECT LANGUAGE", elige_pais: "TRIVIA TOPIC", score: "FINAL SCORE:", restart: "PLAY AGAIN" },
+             paises: { 'PE': 'PERU', 'US': 'USA', 'FR': 'FRANCE', 'DE': 'GERMANY' },
+             data: {
+                'PE': [{ q: "Capital of Peru?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 }, /* ...9 más */ ],
+                'US': [{ q: "Capital of USA?", ops: ["NY", "DC", "Miami", "LA"], ans: 1 }, /* ...9 más */ ],
+                'FR': [{ q: "Capital of France?", ops: ["Lyon", "Paris", "Nice", "Marsella"], ans: 1 }, /* ...9 más */ ],
+                'DE': [{ q: "Capital of Germany?", ops: ["Munich", "Berlin", "Hamburg", "Bonn"], ans: 1 }, /* ...9 más */ ]
+             }
+        }
+        // Se pueden agregar FR y DE como idiomas de interfaz
       };
 
-      let estado = {
-        idioma: 'ES',
-        pais: '',
-        preguntaActualIdx: 0
+      // ESTADO DEL JUEGO
+      let state = {
+          lang: 'ES',
+          topic: 'PE',
+          qIndex: 0,
+          score: 0,
+          isAnswered: false
       };
 
-      // ==========================================
-      // GESTOR CENTRAL DEL JUEGO
-      // ==========================================
-      AFRAME.registerComponent('game-manager', {
+      AFRAME.registerComponent('game-logic', {
         init: function () {
-          this.menuIdioma = document.querySelector('#menu-idioma');
-          this.menuPais = document.querySelector('#menu-pais');
-          this.juegoUI = document.querySelector('#escenario-juego');
-          
-          // Ocultar escenarios no activos
-          this.menuPais.setAttribute('visible', false);
-          this.menuPais.setAttribute('position', '0 -20 0');
-          this.juegoUI.setAttribute('visible', false);
-          this.juegoUI.setAttribute('position', '0 -20 0');
-
-          this.cargarIdiomaMenu();
-        },
-
-        cargarIdiomaMenu: function() {
-            // Carga textos iniciales (si fuera necesario dinámico)
-        },
-
-        selectLanguage: function(lang) {
-            estado.idioma = lang;
-            // Actualizar textos del menú de país
-            document.querySelector('#titulo-pais-txt').setAttribute('value', DATOS_JUEGO[lang].ui.titulo_pais);
-            document.querySelector('#txt-btn-jugar').setAttribute('value', DATOS_JUEGO[lang].ui.btn_jugar);
+            this.menuLang = document.querySelector('#menu-idioma');
+            this.menuTopic = document.querySelector('#menu-tema');
+            this.gameUI = document.querySelector('#ui-juego');
+            this.endUI = document.querySelector('#ui-final');
             
-            this.transicion(this.menuIdioma, this.menuPais);
+            this.resetGame();
+        },
+        
+        resetGame: function() {
+            state.qIndex = 0;
+            state.score = 0;
+            state.isAnswered = false;
+            
+            this.ocultarTodo();
+            this.mostrar(this.menuLang);
         },
 
-        startGame: function() {
-            estado.preguntaActualIdx = 0;
-            this.cargarPregunta();
-            this.transicion(this.menuPais, this.juegoUI);
+        setLang: function(l) {
+            state.lang = l;
+            // Actualizar textos del siguiente menú
+            const txts = DATABASE[state.lang].ui;
+            document.querySelector('#titulo-tema').setAttribute('value', txts.elige_pais);
+            
+            // Actualizar botones de países
+            const p = DATABASE[state.lang].paises;
+            document.querySelector('#txt-pe').setAttribute('value', p.PE);
+            document.querySelector('#txt-us').setAttribute('value', p.US);
+            document.querySelector('#txt-fr').setAttribute('value', p.FR);
+            document.querySelector('#txt-de').setAttribute('value', p.DE);
+
+            this.animarCambio(this.menuLang, this.menuTopic);
         },
 
-        cargarPregunta: function() {
-            const datos = DATOS_JUEGO[estado.idioma];
-            if (estado.preguntaActualIdx >= datos.preguntas.length) {
-                // Fin del juego
-                document.querySelector('#texto-pregunta').setAttribute('value', datos.ui.game_over);
-                // Ocultar botones de respuesta
-                for(let i=0; i<4; i++) document.querySelector('#btn-resp-'+i).setAttribute('visible', false);
+        setTopic: function(t) {
+            state.topic = t;
+            // Verificar si hay datos, si no usar placeholder
+            if(!DATABASE[state.lang].data[t]) { console.error("Faltan datos para " + t); return; }
+            
+            this.animarCambio(this.menuTopic, this.gameUI);
+            this.loadQuestion();
+        },
+
+        loadQuestion: function() {
+            state.isAnswered = false;
+            const currentData = DATABASE[state.lang].data[state.topic];
+            
+            // VERIFICAR FIN DEL JUEGO (10 Preguntas)
+            if(state.qIndex >= 10 || state.qIndex >= currentData.length) {
+                this.showEndScreen();
                 return;
             }
 
-            const pregunta = datos.preguntas[estado.preguntaActualIdx];
+            const q = currentData[state.qIndex];
+
+            // Actualizar Contador
+            document.querySelector('#txt-contador').setAttribute('value', `${state.qIndex + 1} / 10`);
             
-            // Poner texto de pregunta
-            document.querySelector('#texto-pregunta').setAttribute('value', pregunta.p);
-            
-            // Poner textos de opciones
-            for (let i = 0; i < 4; i++) {
-                let btn = document.querySelector('#btn-resp-' + i);
-                let txt = btn.querySelector('a-text');
-                txt.setAttribute('value', pregunta.ops[i]);
-                btn.setAttribute('visible', true); // Asegurar que se vean
-                btn.setAttribute('color', '#333'); // Reset color
+            // Actualizar Pregunta
+            document.querySelector('#txt-pregunta').setAttribute('value', q.q);
+
+            // Actualizar Botones
+            for(let i=0; i<4; i++) {
+                let btn = document.querySelector(`#btn-op-${i}`);
+                let txt = document.querySelector(`#txt-op-${i}`);
+                
+                // Reset visual
+                btn.setAttribute('color', 'rgba(30, 30, 30, 0.8)');
+                btn.setAttribute('animation', ''); // Limpiar animaciones previas
+                
+                if(i < q.ops.length) {
+                    txt.setAttribute('value', q.ops[i]);
+                    btn.classList.add('clickable');
+                    btn.setAttribute('visible', true);
+                    txt.setAttribute('visible', true);
+                } else {
+                    btn.classList.remove('clickable');
+                    btn.setAttribute('visible', false);
+                    txt.setAttribute('visible', false);
+                }
             }
         },
 
-        checkAnswer: function(indiceElegido) {
-            const pregunta = DATOS_JUEGO[estado.idioma].preguntas[estado.preguntaActualIdx];
-            const btnElegido = document.querySelector('#btn-resp-' + indiceElegido);
+        checkAnswer: function(selectedIndex) {
+            if(state.isAnswered) return; // Evitar doble click
+            state.isAnswered = true;
 
-            if (indiceElegido === pregunta.correcta) {
-                // Correcto!
-                btnElegido.setAttribute('color', '#4CAF50'); // Verde
-                setTimeout(() => {
-                    estado.preguntaActualIdx++;
-                    this.cargarPregunta();
-                }, 1000);
+            const currentData = DATABASE[state.lang].data[state.topic];
+            const q = currentData[state.qIndex];
+            const btnSelected = document.querySelector(`#btn-op-${selectedIndex}`);
+            const btnCorrect = document.querySelector(`#btn-op-${q.ans}`);
+
+            if(selectedIndex === q.ans) {
+                // CORRECTO
+                state.score++;
+                this.highlight(btnSelected, '#4CAF50'); // Verde
             } else {
-                // Incorrecto
-                btnElegido.setAttribute('color', '#F44336'); // Rojo
-                setTimeout(() => {
-                     btnElegido.setAttribute('color', '#333'); // Reset
-                }, 1000);
+                // INCORRECTO
+                this.highlight(btnSelected, '#F44336'); // Rojo
+                this.highlight(btnCorrect, '#4CAF50'); // Mostrar cual era la correcta
             }
+
+            // ESPERAR Y PASAR A LA SIGUIENTE
+            setTimeout(() => {
+                state.qIndex++;
+                this.loadQuestion();
+            }, 2000);
         },
 
-        transicion: function(origen, destino) {
-            origen.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300; easing: easeInBack');
-            setTimeout(() => {
-                origen.setAttribute('visible', false);
-                origen.setAttribute('position', '0 -20 0');
+        highlight: function(el, color) {
+            el.setAttribute('color', color);
+            el.setAttribute('animation', 'property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 200; loop: 2');
+        },
 
-                destino.setAttribute('visible', true);
-                destino.setAttribute('position', '0 1.6 -5'); // Posición final a 5 metros
-                destino.setAttribute('scale', '0 0 0');
-                destino.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
-            }, 300);
+        showEndScreen: function() {
+            this.animarCambio(this.gameUI, this.endUI);
+            const txts = DATABASE[state.lang].ui;
+            document.querySelector('#txt-score-titulo').setAttribute('value', txts.score);
+            document.querySelector('#txt-score-final').setAttribute('value', `${state.score} / 10`);
+            document.querySelector('#txt-restart').setAttribute('value', txts.restart);
+        },
+
+        animarCambio: function(salida, entrada) {
+            salida.setAttribute('visible', false);
+            salida.setAttribute('position', '0 -999 0');
+            
+            entrada.setAttribute('visible', true);
+            entrada.setAttribute('position', '0 1.6 -4');
+            // Efecto pop-up
+            entrada.setAttribute('scale', '0.1 0.1 0.1');
+            entrada.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 600; easing: easeOutElastic');
+        },
+
+        ocultarTodo: function() {
+            [this.menuLang, this.menuTopic, this.gameUI, this.endUI].forEach(el => {
+                el.setAttribute('visible', false);
+                el.setAttribute('position', '0 -999 0');
+            });
+        },
+        
+        mostrar: function(el) {
+            el.setAttribute('visible', true);
+            el.setAttribute('position', '0 1.6 -4');
         }
       });
 
-      // ==========================================
-      // COMPONENTE DE BOTONES INTERACTIVOS
-      // ==========================================
-      AFRAME.registerComponent('vr-btn', {
-        schema: {
-          action: {type: 'string'}, // 'lang', 'start', 'answer'
-          value: {type: 'string'}   // 'ES', index '0', '1'...
-        },
-        init: function () {
-          var el = this.el;
-          var data = this.data;
-          var baseColor = el.getAttribute('color');
-          
-          el.addEventListener('mouseenter', function () {
-            el.setAttribute('scale', '1.05 1.05 1.05');
-            // Hacerlo un poco más claro
-            el.setAttribute('material', 'opacity', 0.8);
-          });
-          el.addEventListener('mouseleave', function () {
-            el.setAttribute('scale', '1 1 1');
-            el.setAttribute('material', 'opacity', 1.0);
-          });
-
-          el.addEventListener('click', function () {
-            var manager = document.querySelector('[game-manager]').components['game-manager'];
+      // COMPONENTE PARA INTERACCIÓN DE BOTONES
+      AFRAME.registerComponent('btn-action', {
+        schema: { type: {type:'string'}, val: {type:'string'} },
+        init: function() {
+            let el = this.el;
+            let data = this.data;
             
-            if (data.action === 'lang') {
-                manager.selectLanguage(data.value);
-            } else if (data.action === 'start') {
-                manager.startGame();
-            } else if (data.action === 'answer') {
-                manager.checkAnswer(parseInt(data.value));
-            }
-          });
+            // Hover effect (Visualmente bonito)
+            el.addEventListener('mouseenter', () => {
+                if(state.isAnswered && data.type === 'ans') return;
+                el.setAttribute('material', 'opacity', 1);
+                el.setAttribute('scale', '1.05 1.05 1.05');
+            });
+            el.addEventListener('mouseleave', () => {
+                el.setAttribute('material', 'opacity', 0.6); // Efecto cristal
+                el.setAttribute('scale', '1 1 1');
+            });
+
+            // Click logic
+            el.addEventListener('click', () => {
+                let logic = document.querySelector('a-scene').components['game-logic'];
+                if(data.type === 'lang') logic.setLang(data.val);
+                if(data.type === 'topic') logic.setTopic(data.val);
+                if(data.type === 'ans') logic.checkAnswer(parseInt(data.val));
+                if(data.type === 'restart') logic.resetGame();
+            });
         }
       });
     </script>
   </head>
   <body>
-    <a-scene game-manager>
+    <a-scene game-logic cursor="rayOrigin: mouse" raycaster="objects: .clickable">
       
       <a-assets>
-        <img id="fondo-360" src="fondo360.jpg"> 
-        <img id="logo-img" src="ESAN.png">
-        
-        <a-mixin id="btn-menu" geometry="primitive: box; width: 2; height: 0.6; depth: 0.1"
-                 material="color: #B61F25; shader: flat" vr-btn></a-mixin>
-        <a-mixin id="txt-btn" text="align: center; color: white; width: 6; font: roboto; zOffset: 0.06"></a-mixin>
+        <img id="fondo360" src="fondo360.jpg"> <img id="logo" src="ESAN.png"> <a-mixin id="glass-panel" material="color: #000; opacity: 0.6; transparent: true; metalness: 0.6; roughness: 0.2"></a-mixin>
+        <a-mixin id="glass-btn" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5"
+                 material="color: #1e1e1e; opacity: 0.6; transparent: true; metalness: 0.8; roughness: 0.2"
+                 ></a-mixin>
       </a-assets>
 
-      <a-sky src="#fondo-360" radius="60" rotation="0 -90 0"></a-sky>
+      <a-sky src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
 
-      <a-light type="directional" position="-1 2 1" intensity="0.8"></a-light>
-      <a-light type="ambient" intensity="0.6"></a-light>
+      <a-light type="ambient" intensity="0.5"></a-light>
+      <a-light type="spot" position="0 4 2" target="#ui-juego" intensity="0.8" angle="60" penumbra="0.5"></a-light>
 
       <a-entity id="rig" position="0 0 0">
-        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false">
-            <a-cursor color="#B61F25" raycaster="objects: .clickable" fuse="false"></a-cursor>
-        </a-camera>
-        <a-entity hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc"
-                  laser-controls="hand: right"
-                  raycaster="objects: .clickable; far: 10; showLine: true; lineColor: #B61F25"></a-entity>
+        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false"></a-camera>
+        <a-entity hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc" 
+                  laser-controls="hand: right" raycaster="objects: .clickable; far: 10; lineColor: #B61F25"></a-entity>
         <a-entity hand-controls="hand: left; handModelStyle: highPoly; color: #ffcccc"></a-entity>
       </a-entity>
 
-      <a-entity id="menu-idioma" position="0 1.6 -5">
-        <a-image src="#logo-img" position="0 1.8 0" width="1.5" height="1.5"></a-image>
-        <a-text value="SELECCIONA TU IDIOMA" align="center" position="0 0.9 0" width="7" font="exo2bold"></a-text>
-
-        <a-entity class="clickable" mixin="btn-menu" vr-btn="action: lang; value: ES" position="-1.1 0.4 0">
-            <a-text mixin="txt-btn" value="ESPANOL"></a-text>
-        </a-entity>
-        <a-entity class="clickable" mixin="btn-menu" vr-btn="action: lang; value: EN" position="1.1 0.4 0">
-            <a-text mixin="txt-btn" value="ENGLISH"></a-text>
-        </a-entity>
-        </a-entity>
-
-      <a-entity id="menu-pais" position="0 1.6 -5">
-        <a-text id="titulo-pais-txt" value="ELIGE TU EQUIPO" align="center" position="0 1.0 0" width="7" font="exo2bold"></a-text>
-
-        <a-entity class="clickable" mixin="btn-menu" position="-1.1 0.3 0" material="color: #333">
-            <a-text mixin="txt-btn" value="PERU"></a-text>
-        </a-entity>
-        <a-entity class="clickable" mixin="btn-menu" position="1.1 0.3 0" material="color: #333">
-            <a-text mixin="txt-btn" value="MEXICO"></a-text>
-        </a-entity>
+      <a-entity id="menu-idioma">
+        <a-box mixin="glass-panel" width="4" height="3.5" depth="0.1" position="0 0.5 -0.1"></a-box>
         
-        <a-cylinder class="clickable" vr-btn="action: start" 
-                    position="0 -0.8 0.3" rotation="30 0 0" radius="0.5" height="0.1" color="#4CAF50"
-                    animation="property: scale; dir: alternate; dur: 1000; to: 1.05 1.05 1.05; loop: true">
-            <a-text id="txt-btn-jugar" value="JUGAR" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="6"></a-text>
-        </a-cylinder>
-      </a-entity>
-
-      <a-entity id="escenario-juego" position="0 1.6 -5">
-        
-        <a-box color="#B61F25" depth="0.1" height="0.8" width="5" position="0 1.2 0">
-            <a-text id="texto-pregunta" value="Cargando pregunta..." align="center" color="white" width="4.8" z-offset="0.06"></a-text>
-        </a-box>
+        <a-image src="#logo" position="0 1.8 0.1" width="1.2" height="1.2"></a-image>
+        <a-text value="BIENVENIDO / WELCOME" align="center" width="6" position="0 1 0.1" font="exo2bold"></a-text>
 
         <a-entity position="0 0.2 0">
-            <a-box id="btn-resp-0" class="clickable" vr-btn="action: answer; value: 0" color="#333" depth="0.1" height="0.5" width="2.3" position="-1.2 0.3 0">
-                <a-text value="Opción A" align="center" color="white" width="4" z-offset="0.06"></a-text>
-            </a-box>
-            <a-box id="btn-resp-1" class="clickable" vr-btn="action: answer; value: 1" color="#333" depth="0.1" height="0.5" width="2.3" position="1.2 0.3 0">
-                <a-text value="Opción B" align="center" color="white" width="4" z-offset="0.06"></a-text>
-            </a-box>
-            <a-box id="btn-resp-2" class="clickable" vr-btn="action: answer; value: 2" color="#333" depth="0.1" height="0.5" width="2.3" position="-1.2 -0.3 0">
-                <a-text value="Opción C" align="center" color="white" width="4" z-offset="0.06"></a-text>
-            </a-box>
-            <a-box id="btn-resp-3" class="clickable" vr-btn="action: answer; value: 3" color="#333" depth="0.1" height="0.5" width="2.3" position="1.2 -0.3 0">
-                <a-text value="Opción D" align="center" color="white" width="4" z-offset="0.06"></a-text>
-            </a-box>
+            <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="glass-btn" position="-1.4 0.3 0">
+                <a-text value="ESPAÑOL" align="center" z-offset="0.06" width="5"></a-text>
+                <a-box color="#B61F25" depth="0.06" height="0.52" width="2.52" visible="false"></a-box>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="glass-btn" position="1.4 0.3 0">
+                <a-text value="ENGLISH" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: lang; val: FR" mixin="glass-btn" position="-1.4 -0.4 0">
+                <a-text value="FRANCAIS" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: lang; val: DE" mixin="glass-btn" position="1.4 -0.4 0">
+                <a-text value="DEUTSCH" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="menu-tema">
+        <a-box mixin="glass-panel" width="4" height="3" depth="0.1" position="0 0 -0.1"></a-box>
+        
+        <a-text id="titulo-tema" value="ELIGE PAIS" align="center" width="7" position="0 1.2 0.1" font="exo2bold" color="#B61F25"></a-text>
+
+        <a-entity position="0 -0.2 0">
+            <a-entity class="clickable" btn-action="type: topic; val: PE" mixin="glass-btn" position="-1.4 0.4 0">
+                <a-text id="txt-pe" value="PERU" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: topic; val: US" mixin="glass-btn" position="1.4 0.4 0">
+                <a-text id="txt-us" value="USA" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: topic; val: FR" mixin="glass-btn" position="-1.4 -0.4 0">
+                <a-text id="txt-fr" value="FRANCIA" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+            <a-entity class="clickable" btn-action="type: topic; val: DE" mixin="glass-btn" position="1.4 -0.4 0">
+                <a-text id="txt-de" value="ALEMANIA" align="center" z-offset="0.06" width="5"></a-text>
+            </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="ui-juego">
+        
+        <a-entity position="0 2 0">
+            <a-box color="#B61F25" width="2" height="0.4" depth="0.1"></a-box>
+            <a-text id="txt-contador" value="1 / 10" align="center" z-offset="0.06" width="6" font="exo2bold"></a-text>
         </a-entity>
 
+        <a-box color="white" width="5.5" height="1" depth="0.1" position="0 1.2 0">
+            <a-text id="txt-pregunta" value="Cargando..." align="center" color="#333" width="5" z-offset="0.06" font="kelsonsans"></a-text>
+        </a-box>
+
+        <a-entity position="0 -0.5 0">
+            <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="glass-btn" position="-1.4 0.6 0" width="2.6">
+                <a-box color="#555" width="2.55" height="0.55" depth="0.04" position="0 0 -0.01"></a-box>
+                <a-text id="txt-op-0" value="Op A" align="center" z-offset="0.06" width="4.5"></a-text>
+            </a-entity>
+
+            <a-entity id="btn-op-1" class="clickable" btn-action="type: ans; val: 1" mixin="glass-btn" position="1.4 0.6 0">
+                 <a-box color="#555" width="2.55" height="0.55" depth="0.04" position="0 0 -0.01"></a-box>
+                <a-text id="txt-op-1" value="Op B" align="center" z-offset="0.06" width="4.5"></a-text>
+            </a-entity>
+
+            <a-entity id="btn-op-2" class="clickable" btn-action="type: ans; val: 2" mixin="glass-btn" position="-1.4 -0.2 0">
+                 <a-box color="#555" width="2.55" height="0.55" depth="0.04" position="0 0 -0.01"></a-box>
+                <a-text id="txt-op-2" value="Op C" align="center" z-offset="0.06" width="4.5"></a-text>
+            </a-entity>
+
+            <a-entity id="btn-op-3" class="clickable" btn-action="type: ans; val: 3" mixin="glass-btn" position="1.4 -0.2 0">
+                 <a-box color="#555" width="2.55" height="0.55" depth="0.04" position="0 0 -0.01"></a-box>
+                <a-text id="txt-op-3" value="Op D" align="center" z-offset="0.06" width="4.5"></a-text>
+            </a-entity>
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="ui-final">
+        <a-box mixin="glass-panel" width="4" height="3" depth="0.1" position="0 0.5 -0.1"></a-box>
+        
+        <a-text id="txt-score-titulo" value="PUNTAJE FINAL:" align="center" position="0 1.5 0.1" width="7" font="exo2bold"></a-text>
+        
+        <a-text id="txt-score-final" value="10 / 10" align="center" position="0 0.5 0.1" width="20" color="#4CAF50" font="exo2bold"></a-text>
+
+        <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.5 0.2">
+            <a-cylinder color="#B61F25" height="0.1" radius="0.5" rotation="30 0 0"></a-cylinder>
+            <a-text id="txt-restart" value="REINICIAR" align="center" position="0 0.05 0.2" rotation="-30 0 0" width="5"></a-text>
+        </a-entity>
       </a-entity>
 
     </a-scene>
