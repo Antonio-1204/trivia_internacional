@@ -2,13 +2,13 @@
 <html lang="es">
   <head>
     <meta charset="utf-8">
-    <title>Trivia VR - Versión Final Audio</title>
+    <title>Trivia VR - ESAN Final</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
 
     <script>
       // ==========================================
-      // BASE DE DATOS (CON TILDES Y Ñ)
+      // CONFIGURACIÓN DE DATOS
       // ==========================================
       const DATABASE = {
         'ES': {
@@ -27,15 +27,26 @@
                     { q: "¿Cuál es la montaña más alta?", ops: ["Misti", "Huandoy", "Huascarán", "Yerupajá"], ans: 2 },
                     { q: "¿Ciudad conocida como la Ciudad Blanca?", ops: ["Lima", "Trujillo", "Arequipa", "Piura"], ans: 2 }
                 ],
-                // ... Puedes copiar y pegar la estructura para los otros países
-                'US': [ { q: "¿Capital de Estados Unidos?", ops: ["New York", "Washington DC", "Miami", "Los Ángeles"], ans: 1 } ]
+                'US': [ 
+                    { q: "¿Capital de Estados Unidos?", ops: ["NY", "Washington DC", "Miami", "LA"], ans: 1 },
+                    { q: "¿Moneda oficial?", ops: ["Euro", "Dólar", "Yen", "Libra"], ans: 1 },
+                    { q: "¿Presidente en el billete de $1?", ops: ["Lincoln", "Washington", "Franklin", "Grant"], ans: 1 },
+                    { q: "¿Dónde está Hollywood?", ops: ["Florida", "Texas", "California", "Nevada"], ans: 2 },
+                    { q: "¿Día de la Independencia?", ops: ["4 Julio", "1 Mayo", "25 Dic", "1 Enero"], ans: 0 },
+                    { q: "¿Animal nacional?", ops: ["Águila Calva", "Oso", "Toro", "León"], ans: 0 },
+                    { q: "¿Cuántos estados tiene?", ops: ["48", "50", "52", "45"], ans: 1 },
+                    { q: "¿Ciudad de la Gran Manzana?", ops: ["Chicago", "New York", "Boston", "Seattle"], ans: 1 },
+                    { q: "¿Río famoso que cruza el Gran Cañón?", ops: ["Misisipi", "Colorado", "Amazonas", "Nilo"], ans: 1 },
+                    { q: "¿Deporte del Super Bowl?", ops: ["Béisbol", "Fútbol", "Basket", "Fútbol Americano"], ans: 3 }
+                ]
             }
         },
         'EN': {
              ui: { titulo: "SELECT LANGUAGE", elige_pais: "TRIVIA TOPIC", score: "FINAL SCORE:", restart: "PLAY AGAIN" },
              paises: { 'PE': 'PERU', 'US': 'USA', 'FR': 'FRANCE', 'DE': 'GERMANY' },
              data: {
-                'PE': [{ q: "Capital of Peru?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 }]
+                'PE': [{ q: "Capital of Peru?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 }],
+                'US': [{ q: "Capital of USA?", ops: ["NY", "DC", "Miami", "LA"], ans: 1 }]
              }
         }
       };
@@ -56,16 +67,15 @@
             this.gameUI = document.querySelector('#ui-juego');
             this.endUI = document.querySelector('#ui-final');
             
-            // Referencias de Audio
+            this.bgMusic = document.querySelector('#bg-music');
             this.soundWin = document.querySelector('#sound-win');
             this.soundFail = document.querySelector('#sound-fail');
-            this.bgMusic = document.querySelector('#bg-music');
 
             this.resetGame();
         },
         
         startMusic: function() {
-            if(!state.musicStarted) {
+            if(!state.musicStarted && this.bgMusic) {
                 this.bgMusic.components.sound.playSound();
                 state.musicStarted = true;
             }
@@ -77,18 +87,15 @@
             state.isAnswered = false;
             
             this.ocultarTodo();
-            
-            // Restaurar menú idioma
-            this.menuLang.setAttribute('visible', true);
-            this.menuLang.setAttribute('position', '0 1.6 -4');
-            this.menuLang.setAttribute('scale', '1 1 1'); // IMPORTANTE: Restaurar escala
+            this.mostrar(this.menuLang);
         },
 
         setLang: function(l) {
-            this.startMusic(); // Iniciar música al primer toque
+            this.startMusic();
             state.lang = l;
-            
             const txts = DATABASE[state.lang].ui;
+            
+            // Actualizar textos dinámicos
             document.querySelector('#titulo-tema').setAttribute('value', txts.elige_pais);
             document.querySelector('#txt-restart').setAttribute('value', txts.restart);
             
@@ -98,14 +105,17 @@
             document.querySelector('#txt-fr').setAttribute('value', p.FR);
             document.querySelector('#txt-de').setAttribute('value', p.DE);
 
-            this.animarCambio(this.menuLang, this.menuTopic);
+            this.transicion(this.menuLang, this.menuTopic);
         },
 
         setTopic: function(t) {
             state.topic = t;
-            if(!DATABASE[state.lang].data[t]) { console.log("Faltan datos, usando default PE"); state.topic = 'PE'; }
-            
-            this.animarCambio(this.menuTopic, this.gameUI);
+            // Fallback si no hay datos
+            if(!DATABASE[state.lang].data[t]) { 
+                console.log("Datos no encontrados, usando PE por defecto"); 
+                state.topic = 'PE'; 
+            }
+            this.transicion(this.menuTopic, this.gameUI);
             this.loadQuestion();
         },
 
@@ -127,7 +137,7 @@
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
                 
-                // Reset visual
+                // Reset Visual
                 btn.setAttribute('color', '#1e1e1e');
                 btn.setAttribute('scale', '1 1 1');
                 
@@ -153,52 +163,50 @@
             const btnSelected = document.querySelector(`#btn-op-${selectedIndex}`);
             
             if(selectedIndex === q.ans) {
-                // CORRECTO
                 state.score++;
                 btnSelected.setAttribute('color', '#4CAF50');
-                this.soundWin.components.sound.playSound(); // Sonido Win
+                if(this.soundWin) this.soundWin.components.sound.playSound();
             } else {
-                // INCORRECTO
                 const btnCorrect = document.querySelector(`#btn-op-${q.ans}`);
                 btnSelected.setAttribute('color', '#F44336');
-                btnCorrect.setAttribute('color', '#4CAF50'); // Mostrar la correcta
-                this.soundFail.components.sound.playSound(); // Sonido Fail
+                btnCorrect.setAttribute('color', '#4CAF50');
+                if(this.soundFail) this.soundFail.components.sound.playSound();
             }
 
             setTimeout(() => {
                 state.qIndex++;
                 this.loadQuestion();
-            }, 2500); // Un poco más de tiempo para ver la respuesta
+            }, 2000);
         },
 
         showEndScreen: function() {
-            this.animarCambio(this.gameUI, this.endUI);
+            this.transicion(this.gameUI, this.endUI);
             const txts = DATABASE[state.lang].ui;
             document.querySelector('#txt-score-titulo').setAttribute('value', txts.score);
             document.querySelector('#txt-score-final').setAttribute('value', `${state.score} / 10`);
         },
 
-        animarCambio: function(salida, entrada) {
+        transicion: function(salida, entrada) {
             salida.setAttribute('visible', false);
-            salida.setAttribute('scale', '0 0 0'); // Resetear escala al ocultar
             salida.setAttribute('position', '0 -999 0');
-            
-            entrada.setAttribute('visible', true);
-            entrada.setAttribute('position', '0 1.6 -4');
-            entrada.setAttribute('scale', '0.1 0.1 0.1');
-            entrada.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 600; easing: easeOutElastic');
+            this.mostrar(entrada);
+        },
+
+        mostrar: function(el) {
+            el.setAttribute('visible', true);
+            el.setAttribute('position', '0 1.6 -4');
+            el.setAttribute('scale', '0.1 0.1 0.1');
+            el.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutElastic');
         },
 
         ocultarTodo: function() {
             [this.menuLang, this.menuTopic, this.gameUI, this.endUI].forEach(el => {
                 el.setAttribute('visible', false);
                 el.setAttribute('position', '0 -999 0');
-                el.setAttribute('scale', '0 0 0');
             });
         }
       });
 
-      // COMPONENTE PARA BOTONES
       AFRAME.registerComponent('btn-action', {
         schema: { type: {type:'string'}, val: {type:'string'} },
         init: function() {
@@ -214,7 +222,6 @@
                 el.setAttribute('scale', '1 1 1');
                 el.setAttribute('material', 'opacity', 0.6);
             });
-
             el.addEventListener('click', () => {
                 let logic = document.querySelector('a-scene').components['game-logic'];
                 if(data.type === 'lang') logic.setLang(data.val);
@@ -231,25 +238,22 @@
       
       <a-assets>
         <img id="fondo360" src="fondo360.jpg">
-        <img id="logo" src="ESAN.png">
-        
-        <audio id="music-src" src="musica.mp3" loop="true"></audio>
-        <audio id="win-src" src="win.mp3"></audio>
-        <audio id="fail-src" src="fail.mp3"></audio>
+        <img id="logo" src="ESAN.png"> <audio id="src-music" src="musica.mp3" loop="true"></audio>
+        <audio id="src-win" src="win.mp3"></audio>
+        <audio id="src-fail" src="fail.mp3"></audio>
 
-        <a-mixin id="glass-panel" material="color: #000; opacity: 0.6; transparent: true; metalness: 0.6; roughness: 0.2"></a-mixin>
+        <a-mixin id="glass-panel" material="color: #000; opacity: 0.6; transparent: true"></a-mixin>
         <a-mixin id="glass-btn" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5"
                  material="color: #1e1e1e; opacity: 0.6; transparent: true"></a-mixin>
-        <a-mixin id="font-esp" text="font: roboto; width: 5; align: center; z-offset: 0.06; color: white"></a-mixin>
       </a-assets>
 
-      <a-entity id="bg-music" sound="src: #music-src; volume: 0.3"></a-entity>
-      <a-entity id="sound-win" sound="src: #win-src; poolSize: 5; volume: 1"></a-entity>
-      <a-entity id="sound-fail" sound="src: #fail-src; poolSize: 5; volume: 1"></a-entity>
+      <a-entity id="bg-music" sound="src: #src-music; volume: 0.2"></a-entity>
+      <a-entity id="sound-win" sound="src: #src-win; poolSize: 5; volume: 1"></a-entity>
+      <a-entity id="sound-fail" sound="src: #src-fail; poolSize: 5; volume: 1"></a-entity>
 
       <a-sky src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
-      <a-light type="ambient" intensity="0.5"></a-light>
-      <a-light type="spot" position="0 4 2" target="#ui-juego" intensity="0.8"></a-light>
+      <a-light type="ambient" intensity="0.7"></a-light>
+      <a-light type="directional" position="-1 2 1" intensity="0.5"></a-light>
 
       <a-entity id="rig">
         <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false"></a-camera>
@@ -258,42 +262,45 @@
       </a-entity>
 
       <a-entity id="menu-idioma">
-        <a-box mixin="glass-panel" width="4" height="3.5" position="0 0.5 -0.1"></a-box>
-        <a-image src="#logo" position="0 1.8 0.1" width="1.2" height="1.2"></a-image>
-        <a-text value="BIENVENIDO" mixin="font-esp" position="0 1 0.1" font="exo2bold"></a-text>
+        <a-box mixin="glass-panel" width="4" height="3.8" position="0 0.5 -0.1"></a-box>
+        
+        <a-image src="#logo" position="0 1.8 0.1" width="1.5" height="1.5"></a-image>
+        
+        <a-text value="BIENVENIDO / WELCOME" font="roboto" align="center" width="6" position="0 1.0 0.1" color="#fff"></a-text>
 
-        <a-entity position="0 0.2 0">
+        <a-entity position="0 0.1 0">
             <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="glass-btn" position="-1.4 0.3 0">
-                <a-text value="ESPAÑOL" mixin="font-esp"></a-text>
+                <a-text value="ESPAÑOL" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="glass-btn" position="1.4 0.3 0">
-                <a-text value="ENGLISH" mixin="font-esp"></a-text>
+                <a-text value="ENGLISH" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: FR" mixin="glass-btn" position="-1.4 -0.4 0">
-                <a-text value="FRANÇAIS" mixin="font-esp"></a-text>
+                <a-text value="FRANÇAIS" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: DE" mixin="glass-btn" position="1.4 -0.4 0">
-                <a-text value="DEUTSCH" mixin="font-esp"></a-text>
+                <a-text value="DEUTSCH" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
         </a-entity>
       </a-entity>
 
       <a-entity id="menu-tema" visible="false">
         <a-box mixin="glass-panel" width="4" height="3" position="0 0 -0.1"></a-box>
-        <a-text id="titulo-tema" value="ELIGE PAÍS" mixin="font-esp" position="0 1.2 0.1" font="exo2bold" color="#B61F25"></a-text>
+        
+        <a-text id="titulo-tema" value="ELIGE PAIS" font="roboto" align="center" width="7" position="0 1.2 0.1" color="#B61F25"></a-text>
         
         <a-entity position="0 -0.2 0">
             <a-entity class="clickable" btn-action="type: topic; val: PE" mixin="glass-btn" position="-1.4 0.4 0">
-                <a-text id="txt-pe" value="PERÚ" mixin="font-esp"></a-text>
+                <a-text id="txt-pe" value="PERÚ" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: topic; val: US" mixin="glass-btn" position="1.4 0.4 0">
-                <a-text id="txt-us" value="EE.UU." mixin="font-esp"></a-text>
+                <a-text id="txt-us" value="EE.UU." font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: topic; val: FR" mixin="glass-btn" position="-1.4 -0.4 0">
-                <a-text id="txt-fr" value="FRANCIA" mixin="font-esp"></a-text>
+                <a-text id="txt-fr" value="FRANCIA" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity class="clickable" btn-action="type: topic; val: DE" mixin="glass-btn" position="1.4 -0.4 0">
-                <a-text id="txt-de" value="ALEMANIA" mixin="font-esp"></a-text>
+                <a-text id="txt-de" value="ALEMANIA" font="roboto" align="center" width="5" position="0 0 0.06"></a-text>
             </a-entity>
         </a-entity>
       </a-entity>
@@ -301,37 +308,38 @@
       <a-entity id="ui-juego" visible="false">
         <a-entity position="0 2 0">
             <a-box color="#B61F25" width="2" height="0.4" depth="0.1"></a-box>
-            <a-text id="txt-contador" value="1 / 10" mixin="font-esp" font="exo2bold"></a-text>
+            <a-text id="txt-contador" value="1 / 10" font="roboto" align="center" width="6" position="0 0 0.06" color="white"></a-text>
         </a-entity>
 
         <a-box color="white" width="5.5" height="1" depth="0.1" position="0 1.2 0">
-            <a-text id="txt-pregunta" value="..." mixin="font-esp" color="#333" font="roboto"></a-text>
+            <a-text id="txt-pregunta" value="..." font="roboto" align="center" color="#333" width="5" position="0 0 0.06"></a-text>
         </a-box>
 
         <a-entity position="0 -0.5 0">
             <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="glass-btn" position="-1.4 0.6 0" width="2.6">
-                <a-text id="txt-op-0" value="Op A" mixin="font-esp" width="4.5"></a-text>
+                <a-text id="txt-op-0" value="A" font="roboto" align="center" width="4.5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity id="btn-op-1" class="clickable" btn-action="type: ans; val: 1" mixin="glass-btn" position="1.4 0.6 0" width="2.6">
-                <a-text id="txt-op-1" value="Op B" mixin="font-esp" width="4.5"></a-text>
+                <a-text id="txt-op-1" value="B" font="roboto" align="center" width="4.5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity id="btn-op-2" class="clickable" btn-action="type: ans; val: 2" mixin="glass-btn" position="-1.4 -0.2 0" width="2.6">
-                <a-text id="txt-op-2" value="Op C" mixin="font-esp" width="4.5"></a-text>
+                <a-text id="txt-op-2" value="C" font="roboto" align="center" width="4.5" position="0 0 0.06"></a-text>
             </a-entity>
             <a-entity id="btn-op-3" class="clickable" btn-action="type: ans; val: 3" mixin="glass-btn" position="1.4 -0.2 0" width="2.6">
-                <a-text id="txt-op-3" value="Op D" mixin="font-esp" width="4.5"></a-text>
+                <a-text id="txt-op-3" value="D" font="roboto" align="center" width="4.5" position="0 0 0.06"></a-text>
             </a-entity>
         </a-entity>
       </a-entity>
 
       <a-entity id="ui-final" visible="false">
         <a-box mixin="glass-panel" width="4" height="3" position="0 0.5 -0.1"></a-box>
-        <a-text id="txt-score-titulo" value="PUNTAJE FINAL" mixin="font-esp" position="0 1.5 0.1" font="exo2bold"></a-text>
-        <a-text id="txt-score-final" value="0 / 10" align="center" position="0 0.5 0.1" width="20" color="#4CAF50" font="exo2bold"></a-text>
+        
+        <a-text id="txt-score-titulo" value="PUNTAJE FINAL" font="roboto" align="center" position="0 1.5 0.1" width="7"></a-text>
+        <a-text id="txt-score-final" value="0 / 10" font="roboto" align="center" position="0 0.5 0.1" width="20" color="#4CAF50"></a-text>
 
         <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.5 0.2">
             <a-cylinder color="#B61F25" height="0.1" radius="0.6" rotation="30 0 0"></a-cylinder>
-            <a-text id="txt-restart" value="VOLVER A JUGAR" align="center" position="0 0.05 0.2" rotation="-30 0 0" width="4" font="roboto"></a-text>
+            <a-text id="txt-restart" value="VOLVER A JUGAR" font="roboto" align="center" position="0 0.05 0.2" rotation="-30 0 0" width="4"></a-text>
         </a-entity>
       </a-entity>
 
