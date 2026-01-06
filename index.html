@@ -2,118 +2,192 @@
 <html lang="es">
   <head>
     <meta charset="utf-8">
-    <title>Trivia VR - ESAN 360</title>
+    <title>Trivia VR - Demo Final</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
 
     <script>
       // ==========================================
-      // BASE DE DATOS DE TEXTOS E IDIOMAS
+      // BASE DE DATOS DE TEXTOS Y PREGUNTAS (SIN TILDES NI Ñ)
       // ==========================================
-      const TRADUCCIONES = {
+      const DATOS_JUEGO = {
         'ES': { 
-            titulo: "SELECCIONA TU IDIOMA", 
-            pais_select: "ELIGE TU EQUIPO",
-            start: "JUGAR",
-            pregunta_demo: "¿Capital de Peru?",
-            btn_txt: "RESPONDER"
+            ui: { titulo_idioma: "SELECCIONA TU IDIOMA", titulo_pais: "ELIGE TU EQUIPO", btn_jugar: "JUGAR", game_over: "¡FELICITACIONES! HAS TERMINADO." },
+            preguntas: [
+                { p: "¿Cual es el planeta mas grande del sistema solar?", 
+                  ops: ["Tierra", "Marte", "Jupiter", "Saturno"], 
+                  correcta: 2 },
+                { p: "¿En que continente se encuentra Egipto?", 
+                  ops: ["Africa", "Asia", "Europa", "America"], 
+                  correcta: 0 },
+                { p: "¿Quien pinto la Mona Lisa?", 
+                  ops: ["Picasso", "Van Gogh", "Da Vinci", "Miguel Angel"], 
+                  correcta: 2 },
+                { p: "¿Cual es el rio mas largo del mundo?", 
+                  ops: ["Nilo", "Amazonas", "Yangtse", "Misisipi"], 
+                  correcta: 1 },
+                { p: "¿Cuantos lados tiene un hexagono?", 
+                  ops: ["Cuatro", "Cinco", "Seis", "Ocho"], 
+                  correcta: 2 }
+            ]
         },
         'EN': { 
-            titulo: "SELECT YOUR LANGUAGE", 
-            pais_select: "CHOOSE YOUR TEAM",
-            start: "PLAY",
-            pregunta_demo: "Capital of Peru?",
-            btn_txt: "ANSWER"
+            ui: { titulo_idioma: "SELECT YOUR LANGUAGE", titulo_pais: "CHOOSE YOUR TEAM", btn_jugar: "PLAY", game_over: "CONGRATULATIONS! YOU FINISHED." },
+            preguntas: [
+                { p: "What is the largest planet in the solar system?", 
+                  ops: ["Earth", "Mars", "Jupiter", "Saturn"], 
+                  correcta: 2 },
+                { p: "On which continent is Egypt located?", 
+                  ops: ["Africa", "Asia", "Europe", "America"], 
+                  correcta: 0 },
+                { p: "Who painted the Mona Lisa?", 
+                  ops: ["Picasso", "Van Gogh", "Da Vinci", "Michelangelo"], 
+                  correcta: 2 },
+                { p: "What is the longest river in the world?", 
+                  ops: ["Nile", "Amazon", "Yangtze", "Mississippi"], 
+                  correcta: 1 },
+                { p: "How many sides does a hexagon have?", 
+                  ops: ["Four", "Five", "Six", "Eight"], 
+                  correcta: 2 }
+            ]
         },
-        'FR': { 
-            titulo: "CHOISISSEZ VOTRE LANGUE", 
-            pais_select: "CHOISISSEZ VOTRE ÉQUIPE",
-            start: "JOUER",
-            pregunta_demo: "Capitale du Pérou?",
-            btn_txt: "RÉPONDRE"
-        },
-        'DE': { 
-            titulo: "SPRACHE WÄHLEN", 
-            pais_select: "WÄHLEN SIE IHR TEAM",
-            start: "SPIELEN",
-            pregunta_demo: "Hauptstadt von Peru?",
-            btn_txt: "ANTWORTEN"
-        }
+        // Se pueden añadir FR y DE con la misma estructura
       };
 
-      let idiomaActual = 'ES'; 
+      let estado = {
+        idioma: 'ES',
+        pais: '',
+        preguntaActualIdx: 0
+      };
 
       // ==========================================
-      // GESTOR DE ESTADOS
+      // GESTOR CENTRAL DEL JUEGO
       // ==========================================
       AFRAME.registerComponent('game-manager', {
         init: function () {
           this.menuIdioma = document.querySelector('#menu-idioma');
           this.menuPais = document.querySelector('#menu-pais');
-          this.juego = document.querySelector('#escenario-juego');
+          this.juegoUI = document.querySelector('#escenario-juego');
           
+          // Ocultar escenarios no activos
           this.menuPais.setAttribute('visible', false);
-          this.menuPais.setAttribute('position', '0 -10 0');
-          this.juego.setAttribute('visible', false);
-          this.juego.setAttribute('position', '0 -10 0');
+          this.menuPais.setAttribute('position', '0 -20 0');
+          this.juegoUI.setAttribute('visible', false);
+          this.juegoUI.setAttribute('position', '0 -20 0');
+
+          this.cargarIdiomaMenu();
+        },
+
+        cargarIdiomaMenu: function() {
+            // Carga textos iniciales (si fuera necesario dinámico)
         },
 
         selectLanguage: function(lang) {
-            idiomaActual = lang;
-            const textos = TRADUCCIONES[lang];
-            document.querySelector('#titulo-pais').setAttribute('value', textos.pais_select);
-            document.querySelector('#texto-start').setAttribute('value', textos.start);
-
-            this.animarTransicion(this.menuIdioma, this.menuPais);
+            estado.idioma = lang;
+            // Actualizar textos del menú de país
+            document.querySelector('#titulo-pais-txt').setAttribute('value', DATOS_JUEGO[lang].ui.titulo_pais);
+            document.querySelector('#txt-btn-jugar').setAttribute('value', DATOS_JUEGO[lang].ui.btn_jugar);
+            
+            this.transicion(this.menuIdioma, this.menuPais);
         },
 
         startGame: function() {
-            const textos = TRADUCCIONES[idiomaActual];
-            document.querySelector('#pregunta-texto').setAttribute('value', textos.pregunta_demo);
-            document.querySelector('#btn-respond-text').setAttribute('value', textos.btn_txt);
-
-            this.animarTransicion(this.menuPais, this.juego);
+            estado.preguntaActualIdx = 0;
+            this.cargarPregunta();
+            this.transicion(this.menuPais, this.juegoUI);
         },
 
-        animarTransicion: function(origen, destino) {
-            origen.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 400; easing: easeInBack');
+        cargarPregunta: function() {
+            const datos = DATOS_JUEGO[estado.idioma];
+            if (estado.preguntaActualIdx >= datos.preguntas.length) {
+                // Fin del juego
+                document.querySelector('#texto-pregunta').setAttribute('value', datos.ui.game_over);
+                // Ocultar botones de respuesta
+                for(let i=0; i<4; i++) document.querySelector('#btn-resp-'+i).setAttribute('visible', false);
+                return;
+            }
+
+            const pregunta = datos.preguntas[estado.preguntaActualIdx];
+            
+            // Poner texto de pregunta
+            document.querySelector('#texto-pregunta').setAttribute('value', pregunta.p);
+            
+            // Poner textos de opciones
+            for (let i = 0; i < 4; i++) {
+                let btn = document.querySelector('#btn-resp-' + i);
+                let txt = btn.querySelector('a-text');
+                txt.setAttribute('value', pregunta.ops[i]);
+                btn.setAttribute('visible', true); // Asegurar que se vean
+                btn.setAttribute('color', '#333'); // Reset color
+            }
+        },
+
+        checkAnswer: function(indiceElegido) {
+            const pregunta = DATOS_JUEGO[estado.idioma].preguntas[estado.preguntaActualIdx];
+            const btnElegido = document.querySelector('#btn-resp-' + indiceElegido);
+
+            if (indiceElegido === pregunta.correcta) {
+                // Correcto!
+                btnElegido.setAttribute('color', '#4CAF50'); // Verde
+                setTimeout(() => {
+                    estado.preguntaActualIdx++;
+                    this.cargarPregunta();
+                }, 1000);
+            } else {
+                // Incorrecto
+                btnElegido.setAttribute('color', '#F44336'); // Rojo
+                setTimeout(() => {
+                     btnElegido.setAttribute('color', '#333'); // Reset
+                }, 1000);
+            }
+        },
+
+        transicion: function(origen, destino) {
+            origen.setAttribute('animation', 'property: scale; to: 0 0 0; dur: 300; easing: easeInBack');
             setTimeout(() => {
                 origen.setAttribute('visible', false);
+                origen.setAttribute('position', '0 -20 0');
+
                 destino.setAttribute('visible', true);
-                destino.setAttribute('position', '0 0 0'); 
+                destino.setAttribute('position', '0 1.6 -5'); // Posición final a 5 metros
                 destino.setAttribute('scale', '0 0 0');
-                destino.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 800; easing: easeOutElastic');
-            }, 400);
+                destino.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
+            }, 300);
         }
       });
 
       // ==========================================
-      // COMPONENTE DE BOTONES
+      // COMPONENTE DE BOTONES INTERACTIVOS
       // ==========================================
       AFRAME.registerComponent('vr-btn', {
         schema: {
-          action: {type: 'string'}, 
-          value: {type: 'string'}   
+          action: {type: 'string'}, // 'lang', 'start', 'answer'
+          value: {type: 'string'}   // 'ES', index '0', '1'...
         },
         init: function () {
           var el = this.el;
           var data = this.data;
+          var baseColor = el.getAttribute('color');
           
           el.addEventListener('mouseenter', function () {
-            el.setAttribute('scale', '1.1 1.1 1.1');
-            el.setAttribute('material', 'opacity', 1); 
+            el.setAttribute('scale', '1.05 1.05 1.05');
+            // Hacerlo un poco más claro
+            el.setAttribute('material', 'opacity', 0.8);
           });
           el.addEventListener('mouseleave', function () {
             el.setAttribute('scale', '1 1 1');
-            el.setAttribute('material', 'opacity', 0.9);
+            el.setAttribute('material', 'opacity', 1.0);
           });
 
           el.addEventListener('click', function () {
             var manager = document.querySelector('[game-manager]').components['game-manager'];
+            
             if (data.action === 'lang') {
                 manager.selectLanguage(data.value);
             } else if (data.action === 'start') {
                 manager.startGame();
+            } else if (data.action === 'answer') {
+                manager.checkAnswer(parseInt(data.value));
             }
           });
         }
@@ -124,21 +198,21 @@
     <a-scene game-manager>
       
       <a-assets>
-        <img id="fondo-360-img" src="fondo360.jpg">
-        <img id="logo-esan" src="ESAN.png">
+        <img id="fondo-360" src="fondo360.jpg"> 
+        <img id="logo-img" src="ESAN.png">
         
-        <a-mixin id="estilo-boton" geometry="primitive: box; width: 1.8; height: 0.6; depth: 0.1"
-                 material="color: #B61F25; opacity: 0.9; shader: flat"
-                 text="align: center; color: white; width: 6; font: roboto"></a-mixin>
+        <a-mixin id="btn-menu" geometry="primitive: box; width: 2; height: 0.6; depth: 0.1"
+                 material="color: #B61F25; shader: flat" vr-btn></a-mixin>
+        <a-mixin id="txt-btn" text="align: center; color: white; width: 6; font: roboto; zOffset: 0.06"></a-mixin>
       </a-assets>
 
-      <a-sky src="#fondo-360-img" rotation="0 -90 0"></a-sky>
+      <a-sky src="#fondo-360" radius="60" rotation="0 -90 0"></a-sky>
 
       <a-light type="directional" position="-1 2 1" intensity="0.8"></a-light>
       <a-light type="ambient" intensity="0.6"></a-light>
 
       <a-entity id="rig" position="0 0 0">
-        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="enabled: false">
+        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false">
             <a-cursor color="#B61F25" raycaster="objects: .clickable" fuse="false"></a-cursor>
         </a-camera>
         <a-entity hand-controls="hand: right; handModelStyle: highPoly; color: #ffcccc"
@@ -147,54 +221,56 @@
         <a-entity hand-controls="hand: left; handModelStyle: highPoly; color: #ffcccc"></a-entity>
       </a-entity>
 
-      <a-entity id="menu-idioma" position="0 1.6 -4">
-        <a-image src="#logo-esan" position="0 1.8 0" width="1.5" height="1.5"></a-image>
-        <a-text value="SELECT LANGUAGE / SELECCIONA IDIOMA" align="center" position="0 0.9 0" width="7" font="exo2bold"></a-text>
+      <a-entity id="menu-idioma" position="0 1.6 -5">
+        <a-image src="#logo-img" position="0 1.8 0" width="1.5" height="1.5"></a-image>
+        <a-text value="SELECCIONA TU IDIOMA" align="center" position="0 0.9 0" width="7" font="exo2bold"></a-text>
 
-        <a-entity class="clickable" vr-btn="action: lang; value: ES" mixin="estilo-boton" position="-1 0.4 0">
-            <a-text value="ESPAÑOL" align="center" z-offset="0.06"></a-text>
+        <a-entity class="clickable" mixin="btn-menu" vr-btn="action: lang; value: ES" position="-1.1 0.4 0">
+            <a-text mixin="txt-btn" value="ESPANOL"></a-text>
         </a-entity>
-        <a-entity class="clickable" vr-btn="action: lang; value: EN" mixin="estilo-boton" position="1 0.4 0">
-            <a-text value="ENGLISH" align="center" z-offset="0.06"></a-text>
+        <a-entity class="clickable" mixin="btn-menu" vr-btn="action: lang; value: EN" position="1.1 0.4 0">
+            <a-text mixin="txt-btn" value="ENGLISH"></a-text>
         </a-entity>
-        <a-entity class="clickable" vr-btn="action: lang; value: FR" mixin="estilo-boton" position="-1 -0.4 0">
-            <a-text value="FRANÇAIS" align="center" z-offset="0.06"></a-text>
-        </a-entity>
-        <a-entity class="clickable" vr-btn="action: lang; value: DE" mixin="estilo-boton" position="1 -0.4 0">
-            <a-text value="DEUTSCH" align="center" z-offset="0.06"></a-text>
-        </a-entity>
-      </a-entity>
-
-      <a-entity id="menu-pais" position="0 1.6 -4">
-        <a-text id="titulo-pais" value="ELIGE TU EQUIPO" align="center" position="0 1.0 0" width="7" font="exo2bold"></a-text>
-
-        <a-entity class="clickable" mixin="estilo-boton" position="-1 0.3 0" material="color: #333">
-            <a-text value="PERU" align="center" z-offset="0.06"></a-text>
-        </a-entity>
-        <a-entity class="clickable" mixin="estilo-boton" position="1 0.3 0" material="color: #333">
-            <a-text value="MEXICO" align="center" z-offset="0.06"></a-text>
-        </a-entity>
-        <a-entity class="clickable" mixin="estilo-boton" position="-1 -0.5 0" material="color: #333">
-            <a-text value="COLOMBIA" align="center" z-offset="0.06"></a-text>
-        </a-entity>
-        <a-entity class="clickable" mixin="estilo-boton" position="1 -0.5 0" material="color: #333">
-            <a-text value="ARGENTINA" align="center" z-offset="0.06"></a-text>
         </a-entity>
 
-        <a-cylinder class="clickable" vr-btn="action: start" 
-                    position="0 -1.5 0.5" rotation="30 0 0" radius="0.5" height="0.1" color="#4CAF50"
-                    animation="property: scale; dir: alternate; dur: 1000; to: 1.05 1.05 1.05; loop: true">
-            <a-text id="texto-start" value="JUGAR" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="6"></a-text>
-        </a-cylinder>
-      </a-entity>
+      <a-entity id="menu-pais" position="0 1.6 -5">
+        <a-text id="titulo-pais-txt" value="ELIGE TU EQUIPO" align="center" position="0 1.0 0" width="7" font="exo2bold"></a-text>
 
-      <a-entity id="escenario-juego" position="0 1.6 -4">
-        <a-text id="pregunta-texto" value="¿?" align="center" position="0 1 0" width="8" font="kelsonsans"></a-text>
+        <a-entity class="clickable" mixin="btn-menu" position="-1.1 0.3 0" material="color: #333">
+            <a-text mixin="txt-btn" value="PERU"></a-text>
+        </a-entity>
+        <a-entity class="clickable" mixin="btn-menu" position="1.1 0.3 0" material="color: #333">
+            <a-text mixin="txt-btn" value="MEXICO"></a-text>
+        </a-entity>
         
-        <a-cylinder class="clickable" color="#B61F25" height="0.2" radius="0.4" position="0 -0.5 0"
-                    animation__click="property: position; from: 0 -0.5 0; to: 0 -0.6 0; startEvents: click; dur: 100; dir: alternate">
-             <a-text id="btn-respond-text" value="RESPONDER" align="center" rotation="-90 0 0" position="0 0.11 0"></a-text>       
+        <a-cylinder class="clickable" vr-btn="action: start" 
+                    position="0 -0.8 0.3" rotation="30 0 0" radius="0.5" height="0.1" color="#4CAF50"
+                    animation="property: scale; dir: alternate; dur: 1000; to: 1.05 1.05 1.05; loop: true">
+            <a-text id="txt-btn-jugar" value="JUGAR" align="center" position="0 0.06 0" rotation="-90 0 0" color="white" width="6"></a-text>
         </a-cylinder>
+      </a-entity>
+
+      <a-entity id="escenario-juego" position="0 1.6 -5">
+        
+        <a-box color="#B61F25" depth="0.1" height="0.8" width="5" position="0 1.2 0">
+            <a-text id="texto-pregunta" value="Cargando pregunta..." align="center" color="white" width="4.8" z-offset="0.06"></a-text>
+        </a-box>
+
+        <a-entity position="0 0.2 0">
+            <a-box id="btn-resp-0" class="clickable" vr-btn="action: answer; value: 0" color="#333" depth="0.1" height="0.5" width="2.3" position="-1.2 0.3 0">
+                <a-text value="Opción A" align="center" color="white" width="4" z-offset="0.06"></a-text>
+            </a-box>
+            <a-box id="btn-resp-1" class="clickable" vr-btn="action: answer; value: 1" color="#333" depth="0.1" height="0.5" width="2.3" position="1.2 0.3 0">
+                <a-text value="Opción B" align="center" color="white" width="4" z-offset="0.06"></a-text>
+            </a-box>
+            <a-box id="btn-resp-2" class="clickable" vr-btn="action: answer; value: 2" color="#333" depth="0.1" height="0.5" width="2.3" position="-1.2 -0.3 0">
+                <a-text value="Opción C" align="center" color="white" width="4" z-offset="0.06"></a-text>
+            </a-box>
+            <a-box id="btn-resp-3" class="clickable" vr-btn="action: answer; value: 3" color="#333" depth="0.1" height="0.5" width="2.3" position="1.2 -0.3 0">
+                <a-text value="Opción D" align="center" color="white" width="4" z-offset="0.06"></a-text>
+            </a-box>
+        </a-entity>
+
       </a-entity>
 
     </a-scene>
