@@ -90,9 +90,23 @@
             }
         },
         resetGame: function() {
-            state.qIndex = 0; state.score = 0; state.isAnswered = false;
-            this.ocultarTodo();
-            this.mostrar(this.menuLang);
+            // 1. REINICIAR VARIABLES
+            state.qIndex = 0; 
+            state.score = 0; 
+            state.isAnswered = false;
+
+            // 2. OCULTAR JUEGO Y FINAL
+            this.gameUI.setAttribute('visible', false); 
+            this.gameUI.setAttribute('position', '0 -999 0');
+            
+            this.endUI.setAttribute('visible', false); 
+            this.endUI.setAttribute('position', '0 -999 0');
+
+            // 3. MOSTRAR MENU IDIOMA (Resetear posición y escala)
+            this.menuLang.setAttribute('visible', true);
+            this.menuLang.setAttribute('position', '0 1.6 -4'); // Posición inicial frente a cámara
+            this.menuLang.setAttribute('scale', '0.1 0.1 0.1'); // Efecto pop-up
+            this.menuLang.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
         },
         setLang: function(l) {
             this.startMusic();
@@ -109,7 +123,12 @@
         loadQuestion: function() {
             state.isAnswered = false;
             const lista = DATABASE[state.lang].preguntas;
-            if(state.qIndex >= lista.length) { this.showEndScreen(); return; }
+            
+            // Si se acabaron las preguntas, ir al final
+            if(state.qIndex >= lista.length) { 
+                this.showEndScreen(); 
+                return; 
+            }
             
             const q = lista[state.qIndex];
             document.querySelector('#txt-contador').setAttribute('troika-text', 'value', `${state.qIndex + 1} / ${lista.length}`);
@@ -119,10 +138,9 @@
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
                 
-                // Reset visual
+                // Reset visual del botón
                 btn.setAttribute('color', '#B61F25'); 
                 btn.setAttribute('scale', '1 1 1'); 
-                btn.setAttribute('material', 'opacity', 1); // Asegurar opacidad
                 
                 if(i < q.ops.length) {
                     txt.setAttribute('troika-text', 'value', q.ops[i]);
@@ -158,19 +176,13 @@
             document.querySelector('#txt-score-final').setAttribute('troika-text', 'value', `${state.score} / ${total}`);
         },
         transicion: function(salida, entrada) {
-            salida.setAttribute('visible', false); salida.setAttribute('position', '0 -999 0');
-            this.mostrar(entrada);
-        },
-        mostrar: function(el) {
-            el.setAttribute('visible', true);
-            el.setAttribute('position', '0 1.6 -4');
-            el.setAttribute('scale', '0.1 0.1 0.1');
-            el.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
-        },
-        ocultarTodo: function() {
-            [this.menuLang, this.gameUI, this.endUI].forEach(el => {
-                el.setAttribute('visible', false); el.setAttribute('position', '0 -999 0');
-            });
+            salida.setAttribute('visible', false); 
+            salida.setAttribute('position', '0 -999 0');
+            
+            entrada.setAttribute('visible', true);
+            entrada.setAttribute('position', '0 1.6 -4');
+            entrada.setAttribute('scale', '0.1 0.1 0.1');
+            entrada.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
         }
       });
 
@@ -208,13 +220,13 @@
 
         <a-mixin id="btn-red" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5" material="color: #B61F25"></a-mixin>
         
-        <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8"></a-mixin>
-        <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5"></a-mixin>
+        <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8; position: 0 0 0.1"></a-mixin>
+        <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5; position: 0 0 0.1"></a-mixin>
       </a-assets>
 
-      <a-entity id="bg-music" sound="src: #src-music; volume: 2.5; loop: true"></a-entity>
-      <a-entity id="sound-win" sound="src: #src-win; volume: 1.5"></a-entity>
-      <a-entity id="sound-fail" sound="src: #src-fail; volume: 1.5"></a-entity>
+      <a-entity id="bg-music" sound="src: #src-music; volume: 1.0; loop: true"></a-entity>
+      <a-entity id="sound-win" sound="src: #src-win; volume: 3.0"></a-entity>
+      <a-entity id="sound-fail" sound="src: #src-fail; volume: 3.0"></a-entity>
 
       <a-sky src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
       <a-light type="directional" position="-1 2 1" intensity="1"></a-light>
@@ -232,16 +244,16 @@
         
         <a-image src="#logo" position="0 2.8 0.1" width="1.8" height="1.8"></a-image>
         
-        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0.05" troika-text="color: #B61F25"></a-entity>
-        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0.05"></a-entity>
-        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0.05" troika-text="color: #555"></a-entity>
+        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0" troika-text="value: BIENVENIDO; fontSize: 0.4; color: #B61F25"></a-entity>
+        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0" troika-text="value: SEMANA INTERNACIONAL ESAN"></a-entity>
+        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
 
         <a-entity position="0 0 0">
             <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="btn-red" position="-1.4 0.2 0">
-                <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-btn-es" mixin="txt-white" troika-text="value: ESPAÑOL"></a-entity>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="btn-red" position="1.4 0.2 0">
-                <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-btn-en" mixin="txt-white" troika-text="value: ENGLISH"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
@@ -249,26 +261,26 @@
       <a-entity id="ui-juego" visible="false">
         <a-entity position="0 2.2 0">
             <a-entity geometry="primitive: box; width: 2; height: 0.5; depth: 0.05" material="color: #B61F25"></a-entity>
-            <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06"></a-entity>
+            <a-entity id="txt-contador" mixin="txt-white" troika-text="value: 1 / 10"></a-entity>
         </a-entity>
 
         <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
                   material="color: white; shader: flat" position="0 1.2 -0.05"></a-entity>
         
-        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.05" troika-text="fontSize: 0.3"></a-entity>
+        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0" troika-text="fontSize: 0.3; value: Cargando..."></a-entity>
 
         <a-entity position="0 -0.5 0">
             <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="btn-red" position="-1.4 0.6 0" width="2.6">
-                <a-entity id="txt-op-0" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-op-0" mixin="txt-white" troika-text="value: A"></a-entity>
             </a-entity>
             <a-entity id="btn-op-1" class="clickable" btn-action="type: ans; val: 1" mixin="btn-red" position="1.4 0.6 0" width="2.6">
-                <a-entity id="txt-op-1" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-op-1" mixin="txt-white" troika-text="value: B"></a-entity>
             </a-entity>
             <a-entity id="btn-op-2" class="clickable" btn-action="type: ans; val: 2" mixin="btn-red" position="-1.4 -0.2 0" width="2.6">
-                <a-entity id="txt-op-2" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-op-2" mixin="txt-white" troika-text="value: C"></a-entity>
             </a-entity>
             <a-entity id="btn-op-3" class="clickable" btn-action="type: ans; val: 3" mixin="btn-red" position="1.4 -0.2 0" width="2.6">
-                <a-entity id="txt-op-3" mixin="txt-white" position="0 0 0.06"></a-entity>
+                <a-entity id="txt-op-3" mixin="txt-white" troika-text="value: D"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
@@ -277,16 +289,15 @@
         <a-entity geometry="primitive: plane; width: 5; height: 4" 
                   material="color: white; shader: flat" position="0 0.5 -0.05"></a-entity>
         
-        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0.05" troika-text="color: #B61F25"></a-entity>
-        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0.05" troika-text="color: #4CAF50; fontSize: 0.6"></a-entity>
+        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0" troika-text="color: #B61F25; value: PUNTAJE FINAL"></a-entity>
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
 
         <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.8 0.1">
             <a-cylinder color="#B61F25" height="0.1" radius="0.8" rotation="30 0 0"></a-cylinder>
-            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0.06" rotation="-30 0 0"></a-entity>
+            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0" rotation="-30 0 0" troika-text="value: VOLVER A JUGAR"></a-entity>
         </a-entity>
       </a-entity>
 
     </a-scene>
   </body>
 </html>
-
