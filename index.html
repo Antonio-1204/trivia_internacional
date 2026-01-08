@@ -2,12 +2,15 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <title>Trivia VR - Con Temporizador</title>
+    <title>Trivia VR - ESAN Final</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
     <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
 
     <script>
+      // ==========================================
+      // BASE DE DATOS
+      // ==========================================
       const DATABASE = {
         'ES': {
             ui: { 
@@ -59,7 +62,6 @@
         }
       };
 
-      // Estado global incluyendo variables del temporizador
       let state = { 
           lang: 'ES', 
           qIndex: 0, 
@@ -100,7 +102,6 @@
         },
 
         resetGame: function() {
-            // Limpiar cualquier intervalo activo
             if(state.timerInterval) clearInterval(state.timerInterval);
             
             state.qIndex = 0; 
@@ -132,18 +133,16 @@
 
         // --- LÓGICA DEL TEMPORIZADOR ---
         startTimer: function() {
-            state.timerValue = 20; // 20 segundos por pregunta
+            state.timerValue = 20; 
             const txtTiempo = DATABASE[state.lang].ui.tiempo;
             const timerEl = document.querySelector('#txt-timer');
             
-            // Actualizar texto inicial
+            // Texto inicial
             timerEl.setAttribute('troika-text', 'value', `${txtTiempo}: ${state.timerValue}`);
-            timerEl.setAttribute('troika-text', 'color', '#FFF'); // Blanco normal
+            timerEl.setAttribute('troika-text', 'color', '#FFF'); 
 
-            // Limpiar intervalo anterior si existe
             if(state.timerInterval) clearInterval(state.timerInterval);
 
-            // Iniciar cuenta atrás
             state.timerInterval = setInterval(() => {
                 if(state.isAnswered) {
                     clearInterval(state.timerInterval);
@@ -153,12 +152,11 @@
                 state.timerValue--;
                 timerEl.setAttribute('troika-text', 'value', `${txtTiempo}: ${state.timerValue}`);
 
-                // Cambio de color a rojo si queda poco tiempo
+                // Alerta visual: Amarillo si queda poco tiempo
                 if(state.timerValue <= 5) {
-                    timerEl.setAttribute('troika-text', 'color', '#FF0000');
+                    timerEl.setAttribute('troika-text', 'color', '#FFFF00'); 
                 }
 
-                // TIEMPO AGOTADO
                 if(state.timerValue <= 0) {
                     clearInterval(state.timerInterval);
                     this.handleTimeout();
@@ -168,16 +166,11 @@
 
         handleTimeout: function() {
             state.isAnswered = true;
-            this.soundFail.components.sound.playSound(); // Sonido de error
-            
+            this.soundFail.components.sound.playSound(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
-            // Mostrar cuál era la correcta en verde
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
-            
-            // Esperar y pasar a la siguiente
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
         },
-        // -------------------------------
 
         loadQuestion: function() {
             state.isAnswered = false;
@@ -193,7 +186,6 @@
             document.querySelector('#txt-contador').setAttribute('troika-text', 'value', `${state.qIndex + 1} / ${lista.length}`);
             document.querySelector('#txt-pregunta').setAttribute('troika-text', 'value', q.q);
             
-            // Resetear botones
             for(let i=0; i<4; i++) {
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
@@ -212,16 +204,12 @@
                     txt.setAttribute('visible', false);
                 }
             }
-
-            // INICIAR EL TEMPORIZADOR CADA VEZ QUE CARGA UNA PREGUNTA
             this.startTimer();
         },
 
         checkAnswer: function(idx) {
             if(state.isAnswered) return;
             state.isAnswered = true;
-            
-            // DETENER EL TEMPORIZADOR AL RESPONDER
             if(state.timerInterval) clearInterval(state.timerInterval);
 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
@@ -232,7 +220,7 @@
                 btn.setAttribute('color', '#4CAF50'); // Verde
                 if(this.soundWin) this.soundWin.components.sound.playSound();
             } else {
-                btn.setAttribute('color', '#8B0000'); // Rojo
+                btn.setAttribute('color', '#8B0000'); // Rojo Oscuro
                 document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
@@ -248,7 +236,6 @@
         transicion: function(salida, entrada) {
             salida.setAttribute('visible', false); 
             salida.setAttribute('position', '0 -999 0');
-            
             entrada.setAttribute('visible', true);
             entrada.setAttribute('position', '0 1.6 -4');
             entrada.setAttribute('scale', '0.1 0.1 0.1');
@@ -289,8 +276,9 @@
         <audio id="src-fail" src="fail.mp3"></audio>
 
         <a-mixin id="btn-red" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5" material="color: #B61F25"></a-mixin>
-        <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8; position: 0 0 0.1"></a-mixin>
-        <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5; position: 0 0 0.1"></a-mixin>
+        
+        <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8; outlineWidth: 0.0"></a-mixin>
+        <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5; outlineWidth: 0.0"></a-mixin>
       </a-assets>
 
       <a-entity id="bg-music" sound="src: #src-music; volume: 1.0; loop: true"></a-entity>
@@ -309,20 +297,20 @@
 
       <a-entity id="menu-idioma">
         <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
-                  material="color: white; shader: flat" position="0 1.0 -0.05"></a-entity>
+                  material="color: white; shader: flat" position="0 1.0 -0.1"></a-entity>
         
         <a-image src="#logo" position="0 2.8 0.1" width="1.8" height="1.8"></a-image>
         
-        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0" troika-text="value: BIENVENIDO; fontSize: 0.4; color: #B61F25"></a-entity>
-        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0" troika-text="value: SEMANA INTERNACIONAL ESAN"></a-entity>
-        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
+        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0.1" troika-text="value: BIENVENIDO; fontSize: 0.4; color: #B61F25"></a-entity>
+        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0.1" troika-text="value: SEMANA INTERNACIONAL ESAN"></a-entity>
+        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0.1" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
 
         <a-entity position="0 0 0">
             <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="btn-red" position="-1.4 0.2 0">
-                <a-entity id="txt-btn-es" mixin="txt-white" troika-text="value: ESPAÑOL"></a-entity>
+                <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06" troika-text="value: ESPAÑOL"></a-entity>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="btn-red" position="1.4 0.2 0">
-                <a-entity id="txt-btn-en" mixin="txt-white" troika-text="value: ENGLISH"></a-entity>
+                <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06" troika-text="value: ENGLISH"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
@@ -330,44 +318,45 @@
       <a-entity id="ui-juego" visible="false">
         
         <a-entity position="0 2.2 0">
-            <a-entity geometry="primitive: box; width: 4.5; height: 0.5; depth: 0.05" material="color: #B61F25"></a-entity>
-            
-            <a-entity id="txt-contador" mixin="txt-white" position="-1.2 0 0.06" troika-text="value: 1 / 10; align: left"></a-entity>
-            
-            <a-entity id="txt-timer" mixin="txt-white" position="1.2 0 0.06" troika-text="value: TIEMPO: 20; align: right"></a-entity>
+            <a-entity geometry="primitive: box; width: 2; height: 0.5; depth: 0.05" material="color: #B61F25"></a-entity>
+            <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06" troika-text="value: 1 / 10"></a-entity>
+        </a-entity>
+
+        <a-entity position="2.0 2.2 0">
+            <a-entity id="txt-timer" mixin="txt-white" position="0 0 0.06" troika-text="value: TIEMPO: 20; fontSize: 0.25; color: #FFF; outlineWidth: 0.005; outlineColor: #000"></a-entity>
         </a-entity>
 
         <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
-                  material="color: white; shader: flat" position="0 1.2 -0.05"></a-entity>
+                  material="color: white; shader: flat" position="0 1.2 -0.1"></a-entity>
         
-        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0" troika-text="fontSize: 0.3"></a-entity>
+        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.1" troika-text="fontSize: 0.3; value: Cargando..."></a-entity>
 
         <a-entity position="0 -0.5 0">
             <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="btn-red" position="-1.4 0.6 0" width="2.6">
-                <a-entity id="txt-op-0" mixin="txt-white"></a-entity>
+                <a-entity id="txt-op-0" mixin="txt-white" position="0 0 0.06" troika-text="value: A"></a-entity>
             </a-entity>
             <a-entity id="btn-op-1" class="clickable" btn-action="type: ans; val: 1" mixin="btn-red" position="1.4 0.6 0" width="2.6">
-                <a-entity id="txt-op-1" mixin="txt-white"></a-entity>
+                <a-entity id="txt-op-1" mixin="txt-white" position="0 0 0.06" troika-text="value: B"></a-entity>
             </a-entity>
             <a-entity id="btn-op-2" class="clickable" btn-action="type: ans; val: 2" mixin="btn-red" position="-1.4 -0.2 0" width="2.6">
-                <a-entity id="txt-op-2" mixin="txt-white"></a-entity>
+                <a-entity id="txt-op-2" mixin="txt-white" position="0 0 0.06" troika-text="value: C"></a-entity>
             </a-entity>
             <a-entity id="btn-op-3" class="clickable" btn-action="type: ans; val: 3" mixin="btn-red" position="1.4 -0.2 0" width="2.6">
-                <a-entity id="txt-op-3" mixin="txt-white"></a-entity>
+                <a-entity id="txt-op-3" mixin="txt-white" position="0 0 0.06" troika-text="value: D"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
 
       <a-entity id="ui-final" visible="false">
         <a-entity geometry="primitive: plane; width: 5; height: 4" 
-                  material="color: white; shader: flat" position="0 0.5 -0.05"></a-entity>
+                  material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
         
-        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0" troika-text="color: #B61F25"></a-entity>
-        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0" troika-text="color: #4CAF50; fontSize: 0.6"></a-entity>
+        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0.1" troika-text="color: #B61F25; value: PUNTAJE FINAL"></a-entity>
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0.1" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
 
         <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.8 0.1">
             <a-cylinder color="#B61F25" height="0.1" radius="0.8" rotation="30 0 0"></a-cylinder>
-            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0.06" rotation="-30 0 0"></a-entity>
+            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0.06" rotation="-30 0 0" troika-text="value: VOLVER A JUGAR"></a-entity>
         </a-entity>
       </a-entity>
 
