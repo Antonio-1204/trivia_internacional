@@ -1,71 +1,93 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
-    <meta charset="utf-8">
-    <title>Trivia VR - Diseño Final Limpio</title>
+    <meta charset="UTF-8">
+    <title>Trivia VR - ESAN Final</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-event-set-component@5.0.0/dist/aframe-event-set-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-troika-text/dist/aframe-troika-text.min.js"></script>
 
     <script>
       // ==========================================
-      // CONFIGURACIÓN DE DATOS (BASE DE DATOS)
+      // BASE DE DATOS
       // ==========================================
       const DATABASE = {
         'ES': {
-            ui: { titulo: "BIENVENIDO", sub_idioma: "SELECCIONA TU IDIOMA", elige_pais: "ELIGE LA TEMÁTICA", score: "PUNTAJE FINAL", restart: "VOLVER A JUGAR" },
-            paises: { 'PE': 'PERÚ', 'US': 'EE.UU.', 'FR': 'FRANCIA', 'DE': 'ALEMANIA' },
-            data: {
-                'PE': [
-                    { q: "¿Cuál es la capital del Perú?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 },
-                    { q: "¿Qué animal aparece en el escudo?", ops: ["Llama", "Cóndor", "Vicuña", "Alpaca"], ans: 2 },
-                    { q: "¿En qué año se descubrió Machu Picchu?", ops: ["1911", "1900", "1821", "1950"], ans: 0 },
-                    { q: "¿Cuál es el río más largo del Perú?", ops: ["Rímac", "Amazonas", "Ucayali", "Marañón"], ans: 2 },
-                    { q: "¿Quién es el héroe de Angamos?", ops: ["Bolognesi", "Quiñones", "Grau", "Ugarte"], ans: 2 },
-                    { q: "¿Cuál es la moneda oficial?", ops: ["Peso", "Dólar", "Sol", "Inti"], ans: 2 },
-                    { q: "¿Dónde está el Lago Titicaca?", ops: ["Puno", "Tacna", "Loreto", "Cusco"], ans: 0 },
-                    { q: "¿Plato bandera de pescado crudo?", ops: ["Lomo Saltado", "Ceviche", "Cuy", "Ají de Gallina"], ans: 1 },
-                    { q: "¿Cuál es la montaña más alta?", ops: ["Misti", "Huandoy", "Huascarán", "Yerupajá"], ans: 2 },
-                    { q: "¿Ciudad conocida como la Ciudad Blanca?", ops: ["Lima", "Trujillo", "Arequipa", "Piura"], ans: 2 }
-                ],
-                'US': [ 
-                    { q: "¿Capital de Estados Unidos?", ops: ["NY", "Washington DC", "Miami", "LA"], ans: 1 },
-                    { q: "¿Moneda oficial?", ops: ["Euro", "Dólar", "Yen", "Libra"], ans: 1 },
-                    { q: "¿Presidente en el billete de $1?", ops: ["Lincoln", "Washington", "Franklin", "Grant"], ans: 1 },
-                    { q: "¿Dónde está Hollywood?", ops: ["Florida", "Texas", "California", "Nevada"], ans: 2 },
-                    { q: "¿Día de la Independencia?", ops: ["4 Julio", "1 Mayo", "25 Dic", "1 Enero"], ans: 0 },
-                    { q: "¿Animal nacional?", ops: ["Águila Calva", "Oso", "Toro", "León"], ans: 0 },
-                    { q: "¿Cuántos estados tiene?", ops: ["48", "50", "52", "45"], ans: 1 },
-                    { q: "¿Ciudad de la Gran Manzana?", ops: ["Chicago", "New York", "Boston", "Seattle"], ans: 1 },
-                    { q: "¿Río famoso que cruza el Gran Cañón?", ops: ["Misisipi", "Colorado", "Amazonas", "Nilo"], ans: 1 },
-                    { q: "¿Deporte del Super Bowl?", ops: ["Béisbol", "Fútbol", "Basket", "Fútbol Americano"], ans: 3 }
-                ]
-            }
+            ui: { 
+                bienvenida: "BIENVENIDO", 
+                subtitulo: "SEMANA INTERNACIONAL ESAN",
+                instr: "SELECCIONA TU IDIOMA",
+                btn_es: "ESPAÑOL", 
+                btn_en: "ENGLISH",
+                score: "PUNTAJE FINAL", 
+                restart: "VOLVER A JUGAR" 
+            },
+            preguntas: [
+                { q: "¿Quién descubrió América?", ops: ["Cristóbal Colón", "Américo Vespucio", "Magallanes", "Marco Polo"], ans: 0 },
+                { q: "¿Cuándo comenzó la II Guerra Mundial?", ops: ["1914", "1920", "1939", "1945"], ans: 2 },
+                { q: "¿Quién pintó la Mona Lisa?", ops: ["Picasso", "Van Gogh", "Da Vinci", "Miguel Ángel"], ans: 2 },
+                { q: "¿Cuál es el río más largo del mundo?", ops: ["Nilo", "Amazonas", "Misisipi", "Yangtsé"], ans: 1 },
+                { q: "¿En qué año llegó el hombre a la Luna?", ops: ["1950", "1969", "1980", "2000"], ans: 1 },
+                { q: "¿Cuál es el país más grande del mundo?", ops: ["China", "EE.UU.", "Rusia", "Canadá"], ans: 2 },
+                { q: "¿Dónde están las Pirámides de Giza?", ops: ["México", "Perú", "Egipto", "Sudán"], ans: 2 },
+                { q: "¿Qué elemento químico es la H?", ops: ["Helio", "Hierro", "Hidrógeno", "Holmio"], ans: 2 },
+                { q: "¿Cuál es la capital de Francia?", ops: ["Londres", "Berlín", "Roma", "París"], ans: 3 },
+                { q: "¿Quién escribió Don Quijote?", ops: ["Cervantes", "Shakespeare", "Dante", "Gabo"], ans: 0 }
+            ]
         },
         'EN': {
-             ui: { titulo: "WELCOME", sub_idioma: "SELECT YOUR LANGUAGE", elige_pais: "CHOOSE TOPIC", score: "FINAL SCORE", restart: "PLAY AGAIN" },
-             paises: { 'PE': 'PERU', 'US': 'USA', 'FR': 'FRANCE', 'DE': 'GERMANY' },
-             data: {
-                'PE': [{ q: "Capital of Peru?", ops: ["Arequipa", "Lima", "Cusco", "Trujillo"], ans: 1 }],
-                'US': [{ q: "Capital of USA?", ops: ["NY", "DC", "Miami", "LA"], ans: 1 }]
-             }
+             ui: { 
+                bienvenida: "WELCOME", 
+                subtitulo: "ESAN INTERNATIONAL WEEK",
+                instr: "SELECT YOUR LANGUAGE",
+                btn_es: "SPANISH",
+                btn_en: "ENGLISH",
+                score: "FINAL SCORE", 
+                restart: "PLAY AGAIN" 
+            },
+            preguntas: [
+                { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
+                { q: "When did WWII start?", ops: ["1914", "1920", "1939", "1945"], ans: 2 },
+                { q: "Who painted the Mona Lisa?", ops: ["Picasso", "Van Gogh", "Da Vinci", "Michelangelo"], ans: 2 },
+                { q: "What is the longest river in the world?", ops: ["Nile", "Amazon", "Mississippi", "Yangtze"], ans: 1 },
+                { q: "What year did man land on the Moon?", ops: ["1950", "1969", "1980", "2000"], ans: 1 },
+                { q: "What is the largest country in the world?", ops: ["China", "USA", "Russia", "Canada"], ans: 2 },
+                { q: "Where are the Pyramids of Giza?", ops: ["Mexico", "Peru", "Egypt", "Sudan"], ans: 2 },
+                { q: "What chemical element is H?", ops: ["Helium", "Iron", "Hydrogen", "Holmium"], ans: 2 },
+                { q: "What is the capital of France?", ops: ["London", "Berlin", "Rome", "Paris"], ans: 3 },
+                { q: "Who wrote Don Quixote?", ops: ["Cervantes", "Shakespeare", "Dante", "Gabo"], ans: 0 }
+            ]
         }
       };
 
-      let state = { lang: 'ES', topic: 'PE', qIndex: 0, score: 0, isAnswered: false, musicStarted: false };
+      let state = { lang: 'ES', qIndex: 0, score: 0, isAnswered: false, musicStarted: false };
 
       AFRAME.registerComponent('game-logic', {
         init: function () {
             this.menuLang = document.querySelector('#menu-idioma');
-            this.menuTopic = document.querySelector('#menu-tema');
             this.gameUI = document.querySelector('#ui-juego');
             this.endUI = document.querySelector('#ui-final');
             this.bgMusic = document.querySelector('#bg-music');
             this.soundWin = document.querySelector('#sound-win');
             this.soundFail = document.querySelector('#sound-fail');
+            
+            // Cargar textos iniciales
+            this.updateMenuTexts('ES'); 
             this.resetGame();
         },
+        updateMenuTexts: function(lang) {
+            const txts = DATABASE[lang].ui;
+            document.querySelector('#txt-bienvenida').setAttribute('troika-text', 'value', txts.bienvenida);
+            document.querySelector('#txt-subtitulo').setAttribute('troika-text', 'value', txts.subtitulo);
+            document.querySelector('#txt-instr').setAttribute('troika-text', 'value', txts.instr);
+            document.querySelector('#txt-btn-es').setAttribute('troika-text', 'value', txts.btn_es);
+            document.querySelector('#txt-btn-en').setAttribute('troika-text', 'value', txts.btn_en);
+        },
         startMusic: function() {
-            if(!state.musicStarted && this.bgMusic) { this.bgMusic.components.sound.playSound(); state.musicStarted = true; }
+            if(!state.musicStarted && this.bgMusic && this.bgMusic.components.sound) { 
+                this.bgMusic.components.sound.playSound(); 
+                state.musicStarted = true; 
+            }
         },
         resetGame: function() {
             state.qIndex = 0; state.score = 0; state.isAnswered = false;
@@ -76,61 +98,64 @@
             this.startMusic();
             state.lang = l;
             const txts = DATABASE[state.lang].ui;
-            document.querySelector('#titulo-tema').setAttribute('value', txts.elige_pais);
-            document.querySelector('#titulo-score').setAttribute('value', txts.score);
-            document.querySelector('#txt-restart').setAttribute('value', txts.restart);
-            const p = DATABASE[state.lang].paises;
-            document.querySelector('#txt-pe').setAttribute('value', p.PE);
-            document.querySelector('#txt-us').setAttribute('value', p.US);
-            document.querySelector('#txt-fr').setAttribute('value', p.FR);
-            document.querySelector('#txt-de').setAttribute('value', p.DE);
-            this.transicion(this.menuLang, this.menuTopic);
-        },
-        setTopic: function(t) {
-            state.topic = t;
-            if(!DATABASE[state.lang].data[t]) { state.topic = 'PE'; }
-            this.transicion(this.menuTopic, this.gameUI);
+            
+            // Actualizar UI Final y Restart
+            document.querySelector('#titulo-score').setAttribute('troika-text', 'value', txts.score);
+            document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
+            
+            this.transicion(this.menuLang, this.gameUI);
             this.loadQuestion();
         },
         loadQuestion: function() {
             state.isAnswered = false;
-            const currentData = DATABASE[state.lang].data[state.topic];
-            if(state.qIndex >= currentData.length || state.qIndex >= 10) { this.showEndScreen(); return; }
-            const q = currentData[state.qIndex];
-            document.querySelector('#txt-contador').setAttribute('value', `${state.qIndex + 1} / 10`);
-            document.querySelector('#txt-pregunta').setAttribute('value', q.q);
+            const lista = DATABASE[state.lang].preguntas;
+            if(state.qIndex >= lista.length) { this.showEndScreen(); return; }
+            
+            const q = lista[state.qIndex];
+            document.querySelector('#txt-contador').setAttribute('troika-text', 'value', `${state.qIndex + 1} / ${lista.length}`);
+            document.querySelector('#txt-pregunta').setAttribute('troika-text', 'value', q.q);
+            
             for(let i=0; i<4; i++) {
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
-                // Reset visual al rojo ESAN
+                
+                // Reset visual
                 btn.setAttribute('color', '#B61F25'); 
+                btn.setAttribute('scale', '1 1 1'); 
+                btn.setAttribute('material', 'opacity', 1); // Asegurar opacidad
+                
                 if(i < q.ops.length) {
-                    txt.setAttribute('value', q.ops[i]);
-                    btn.classList.add('clickable'); btn.setAttribute('visible', true);
+                    txt.setAttribute('troika-text', 'value', q.ops[i]);
+                    btn.classList.add('clickable'); 
+                    btn.setAttribute('visible', true);
+                    txt.setAttribute('visible', true);
                 } else {
-                    btn.classList.remove('clickable'); btn.setAttribute('visible', false);
+                    btn.classList.remove('clickable'); 
+                    btn.setAttribute('visible', false);
+                    txt.setAttribute('visible', false);
                 }
             }
         },
-        checkAnswer: function(selectedIndex) {
+        checkAnswer: function(idx) {
             if(state.isAnswered) return;
             state.isAnswered = true;
-            const q = DATABASE[state.lang].data[state.topic][state.qIndex];
-            const btnSelected = document.querySelector(`#btn-op-${selectedIndex}`);
-            if(selectedIndex === q.ans) {
+            const q = DATABASE[state.lang].preguntas[state.qIndex];
+            const btn = document.querySelector(`#btn-op-${idx}`);
+            if(idx === q.ans) {
                 state.score++;
-                btnSelected.setAttribute('color', '#4CAF50'); // Verde
+                btn.setAttribute('color', '#4CAF50'); // Verde
                 if(this.soundWin) this.soundWin.components.sound.playSound();
             } else {
-                btnSelected.setAttribute('color', '#555'); // Gris oscuro para error
-                document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); // Mostrar la correcta
+                btn.setAttribute('color', '#8B0000'); // Rojo
+                document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
-            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2000);
+            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
         },
         showEndScreen: function() {
             this.transicion(this.gameUI, this.endUI);
-            document.querySelector('#txt-score-final').setAttribute('value', `${state.score} / 10`);
+            const total = DATABASE[state.lang].preguntas.length;
+            document.querySelector('#txt-score-final').setAttribute('troika-text', 'value', `${state.score} / ${total}`);
         },
         transicion: function(salida, entrada) {
             salida.setAttribute('visible', false); salida.setAttribute('position', '0 -999 0');
@@ -138,12 +163,12 @@
         },
         mostrar: function(el) {
             el.setAttribute('visible', true);
-            el.setAttribute('position', '0 1.6 -4'); // Posición estándar a 4 metros
+            el.setAttribute('position', '0 1.6 -4');
             el.setAttribute('scale', '0.1 0.1 0.1');
             el.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
         },
         ocultarTodo: function() {
-            [this.menuLang, this.menuTopic, this.gameUI, this.endUI].forEach(el => {
+            [this.menuLang, this.gameUI, this.endUI].forEach(el => {
                 el.setAttribute('visible', false); el.setAttribute('position', '0 -999 0');
             });
         }
@@ -156,16 +181,15 @@
             el.addEventListener('mouseenter', () => {
                 if(state.isAnswered && data.type === 'ans') return;
                 el.setAttribute('scale', '1.05 1.05 1.05');
-                el.setAttribute('material', 'emissive', '#ffaaaa'); // Brillo rojizo al mirar
+                el.setAttribute('material', 'opacity', 0.8);
             });
             el.addEventListener('mouseleave', () => {
                 el.setAttribute('scale', '1 1 1');
-                el.setAttribute('material', 'emissive', '#000');
+                el.setAttribute('material', 'opacity', 1.0);
             });
             el.addEventListener('click', () => {
                 let logic = document.querySelector('a-scene').components['game-logic'];
                 if(data.type === 'lang') logic.setLang(data.val);
-                if(data.type === 'topic') logic.setTopic(data.val);
                 if(data.type === 'ans') logic.checkAnswer(parseInt(data.val));
                 if(data.type === 'restart') logic.resetGame();
             });
@@ -182,19 +206,19 @@
         <audio id="src-win" src="win.mp3"></audio>
         <audio id="src-fail" src="fail.mp3"></audio>
 
-        <a-mixin id="panel-bg" geometry="primitive: box; depth: 0.05" material="color: #FFFFFF; shader: flat"></a-mixin>
-        <a-mixin id="btn-red" geometry="primitive: box; depth: 0.08; height: 0.5; width: 2.5"
-                 material="color: #B61F25"></a-mixin>
-        <a-mixin id="txt-visible" text="font: roboto; align: center; z-offset: 0.05; material.shader: flat; material.fog: false"></a-mixin>
+        <a-mixin id="btn-red" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5" material="color: #B61F25"></a-mixin>
+        
+        <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8"></a-mixin>
+        <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5"></a-mixin>
       </a-assets>
 
-      <a-entity id="bg-music" sound="src: #src-music; volume: 0.2"></a-entity>
-      <a-entity id="sound-win" sound="src: #src-win; volume: 1"></a-entity>
-      <a-entity id="sound-fail" sound="src: #src-fail; volume: 1"></a-entity>
+      <a-entity id="bg-music" sound="src: #src-music; volume: 1.0; loop: true"></a-entity>
+      <a-entity id="sound-win" sound="src: #src-win; volume: 3.0"></a-entity>
+      <a-entity id="sound-fail" sound="src: #src-fail; volume: 3.0"></a-entity>
 
       <a-sky src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
-      <a-light type="directional" position="-1 2 1" intensity="0.6"></a-light>
-      <a-light type="ambient" intensity="0.8"></a-light>
+      <a-light type="directional" position="-1 2 1" intensity="1"></a-light>
+      <a-light type="ambient" intensity="1"></a-light>
 
       <a-entity id="rig">
         <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false"></a-camera>
@@ -203,83 +227,62 @@
       </a-entity>
 
       <a-entity id="menu-idioma">
-        <a-entity mixin="panel-bg" width="4" height="4" position="0 0.5 -0.1"></a-entity>
+        <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
+                  material="color: white; shader: flat" position="0 1.0 -0.05"></a-entity>
         
-        <a-image src="#logo" position="0 1.9 0.1" width="1.5" height="1.5"></a-image>
+        <a-image src="#logo" position="0 2.8 0.1" width="1.8" height="1.8"></a-image>
         
-        <a-text value="BIENVENIDO" mixin="txt-visible" position="0 1.1 0.1" color="#B61F25" scale="1.5 1.5 1.5"></a-text>
-        <a-text id="sub-idioma" value="SELECCIONA TU IDIOMA" mixin="txt-visible" position="0 0.7 0.1" color="#555"></a-text>
+        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0.05" troika-text="color: #B61F25"></a-entity>
+        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0.05"></a-entity>
+        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0.05" troika-text="color: #555"></a-entity>
 
         <a-entity position="0 0 0">
             <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="btn-red" position="-1.4 0.2 0">
-                <a-text value="ESPAÑOL" mixin="txt-visible" color="white"></a-text>
+                <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
             <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="btn-red" position="1.4 0.2 0">
-                <a-text value="ENGLISH" mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: lang; val: FR" mixin="btn-red" position="-1.4 -0.5 0">
-                <a-text value="FRANÇAIS" mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: lang; val: DE" mixin="btn-red" position="1.4 -0.5 0">
-                <a-text value="DEUTSCH" mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-        </a-entity>
-      </a-entity>
-
-      <a-entity id="menu-tema" visible="false">
-        <a-entity mixin="panel-bg" width="4" height="3" position="0 0 -0.1"></a-entity>
-        <a-text id="titulo-tema" value="ELIGE PAIS" mixin="txt-visible" position="0 1.1 0.1" color="#B61F25" scale="1.2 1.2 1.2"></a-text>
-        
-        <a-entity position="0 -0.2 0">
-            <a-entity class="clickable" btn-action="type: topic; val: PE" mixin="btn-red" position="-1.4 0.4 0">
-                <a-text id="txt-pe" value="PERÚ" mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: topic; val: US" mixin="btn-red" position="1.4 0.4 0">
-                <a-text id="txt-us" value="EE.UU." mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: topic; val: FR" mixin="btn-red" position="-1.4 -0.4 0">
-                <a-text id="txt-fr" value="FRANCIA" mixin="txt-visible" color="white"></a-text>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: topic; val: DE" mixin="btn-red" position="1.4 -0.4 0">
-                <a-text id="txt-de" value="ALEMANIA" mixin="txt-visible" color="white"></a-text>
+                <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
 
       <a-entity id="ui-juego" visible="false">
-        <a-entity position="0 2.1 0">
-            <a-entity mixin="btn-red" width="2" height="0.4"></a-entity>
-            <a-text id="txt-contador" value="1 / 10" mixin="txt-visible" color="white"></a-text>
+        <a-entity position="0 2.2 0">
+            <a-entity geometry="primitive: box; width: 2; height: 0.5; depth: 0.05" material="color: #B61F25"></a-entity>
+            <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06"></a-entity>
         </a-entity>
 
-        <a-entity mixin="panel-bg" width="5.8" height="1.1" position="0 1.2 0"></a-entity>
-        <a-text id="txt-pregunta" value="..." mixin="txt-visible" color="#333" width="5.5" position="0 1.2 0.1"></a-text>
+        <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
+                  material="color: white; shader: flat" position="0 1.2 -0.05"></a-entity>
+        
+        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.05" troika-text="fontSize: 0.3"></a-entity>
 
         <a-entity position="0 -0.5 0">
             <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="btn-red" position="-1.4 0.6 0" width="2.6">
-                <a-text id="txt-op-0" value="A" mixin="txt-visible" width="4.5" color="white"></a-text>
+                <a-entity id="txt-op-0" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
             <a-entity id="btn-op-1" class="clickable" btn-action="type: ans; val: 1" mixin="btn-red" position="1.4 0.6 0" width="2.6">
-                <a-text id="txt-op-1" value="B" mixin="txt-visible" width="4.5" color="white"></a-text>
+                <a-entity id="txt-op-1" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
             <a-entity id="btn-op-2" class="clickable" btn-action="type: ans; val: 2" mixin="btn-red" position="-1.4 -0.2 0" width="2.6">
-                <a-text id="txt-op-2" value="C" mixin="txt-visible" width="4.5" color="white"></a-text>
+                <a-entity id="txt-op-2" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
             <a-entity id="btn-op-3" class="clickable" btn-action="type: ans; val: 3" mixin="btn-red" position="1.4 -0.2 0" width="2.6">
-                <a-text id="txt-op-3" value="D" mixin="txt-visible" width="4.5" color="white"></a-text>
+                <a-entity id="txt-op-3" mixin="txt-white" position="0 0 0.06"></a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
 
       <a-entity id="ui-final" visible="false">
-        <a-entity mixin="panel-bg" width="4" height="3.5" position="0 0.5 -0.1"></a-entity>
+        <a-entity geometry="primitive: plane; width: 5; height: 4" 
+                  material="color: white; shader: flat" position="0 0.5 -0.05"></a-entity>
         
-        <a-text id="titulo-score" value="PUNTAJE FINAL" mixin="txt-visible" position="0 1.5 0.1" color="#B61F25" scale="1.2 1.2 1.2"></a-text>
-        <a-text id="txt-score-final" value="0 / 10" mixin="txt-visible" position="0 0.5 0.1" width="20" color="#4CAF50"></a-text>
+        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0.05" troika-text="color: #B61F25"></a-entity>
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0.05" troika-text="color: #4CAF50; fontSize: 0.6"></a-entity>
 
-        <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.6 0.2">
-            <a-cylinder color="#B61F25" height="0.1" radius="0.7" rotation="30 0 0"></a-cylinder>
-            <a-text id="txt-restart" value="VOLVER A JUGAR" mixin="txt-visible" position="0 0.05 0.1" rotation="-30 0 0" width="4" color="white"></a-text>
+        <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.8 0.1">
+            <a-cylinder color="#B61F25" height="0.1" radius="0.8" rotation="30 0 0"></a-cylinder>
+            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0.06" rotation="-30 0 0"></a-entity>
         </a-entity>
       </a-entity>
 
