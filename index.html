@@ -231,7 +231,7 @@
                 document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
-            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
+            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
         // --- CONFETI NATIVO ---
@@ -439,7 +439,7 @@
         <a-entity geometry="primitive: plane; width: 5; height: 4" 
                   material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
         
-        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.8 0.1" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.8 0.1" troika-text="color: #4CAF50; fontSize: 0.5; value: 0 / 10"></a-entity>
 
         <a-entity position="0 -1.0 0.2"
                   animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
@@ -456,4 +456,5 @@
     </a-scene>
   </body>
 </html>
+
 
