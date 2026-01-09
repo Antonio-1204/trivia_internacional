@@ -178,7 +178,7 @@
             if(this.soundFail) this.soundFail.components.sound.playSound(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
-            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
+            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
         loadQuestion: function() {
@@ -456,3 +456,4 @@
     </a-scene>
   </body>
 </html>
+
