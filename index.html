@@ -20,8 +20,7 @@
                 btn_es: "ESPAÑOL", 
                 btn_en: "ENGLISH",
                 score: "PUNTAJE FINAL", 
-                restart: "VOLVER A JUGAR",
-                tiempo: "TIEMPO"
+                restart: "VOLVER A JUGAR"
             },
             preguntas: [
                 { q: "¿Quién descubrió América?", ops: ["Cristóbal Colón", "Américo Vespucio", "Magallanes", "Marco Polo"], ans: 0 },
@@ -44,8 +43,7 @@
                 btn_es: "SPANISH",
                 btn_en: "ENGLISH",
                 score: "FINAL SCORE", 
-                restart: "PLAY AGAIN",
-                tiempo: "TIME"
+                restart: "PLAY AGAIN"
             },
             preguntas: [
                 { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
@@ -68,7 +66,6 @@
           score: 0, 
           isAnswered: false, 
           musicStarted: false,
-          timerValue: 20,
           timerInterval: null
       };
 
@@ -80,6 +77,9 @@
             this.bgMusic = document.querySelector('#bg-music');
             this.soundWin = document.querySelector('#sound-win');
             this.soundFail = document.querySelector('#sound-fail');
+            
+            // Referencias a la barra de tiempo
+            this.timerBar = document.querySelector('#timer-bar');
             
             this.updateMenuTexts('ES'); 
             this.resetGame();
@@ -102,7 +102,7 @@
         },
 
         resetGame: function() {
-            if(state.timerInterval) clearInterval(state.timerInterval);
+            this.stopTimer();
             
             state.qIndex = 0; 
             state.score = 0; 
@@ -131,53 +131,67 @@
             this.loadQuestion();
         },
 
-        // --- LÓGICA DEL TEMPORIZADOR ---
+        // --- LÓGICA DE LA BARRA DE TIEMPO ---
         startTimer: function() {
-            state.timerValue = 20; 
-            const txtTiempo = DATABASE[state.lang].ui.tiempo;
-            const timerEl = document.querySelector('#txt-timer');
-            
-            // Texto inicial
-            timerEl.setAttribute('troika-text', 'value', `${txtTiempo}: ${state.timerValue}`);
-            timerEl.setAttribute('troika-text', 'color', '#FFF'); 
+            this.stopTimer(); // Limpiar si existe uno previo
+            let timeLeft = 20;
+            const totalWidth = 6; // Ancho visual de la barra
 
-            if(state.timerInterval) clearInterval(state.timerInterval);
+            // Reset visual de la barra
+            this.timerBar.setAttribute('width', totalWidth);
+            this.timerBar.setAttribute('color', '#4CAF50'); // Verde inicio
 
             state.timerInterval = setInterval(() => {
-                if(state.isAnswered) {
-                    clearInterval(state.timerInterval);
-                    return;
+                if(state.isAnswered) return;
+
+                timeLeft -= 0.1; // Restamos 0.1 segundos
+                let pct = Math.max(0, timeLeft / 20); // Porcentaje restante
+                
+                // Actualizar ancho
+                this.timerBar.setAttribute('width', totalWidth * pct);
+
+                // Cambiar color según tiempo restante
+                if(timeLeft > 10) {
+                    this.timerBar.setAttribute('color', '#4CAF50'); // Verde
+                } else if (timeLeft > 5) {
+                    this.timerBar.setAttribute('color', '#FFEB3B'); // Amarillo
+                } else {
+                    this.timerBar.setAttribute('color', '#D32F2F'); // Rojo
                 }
 
-                state.timerValue--;
-                timerEl.setAttribute('troika-text', 'value', `${txtTiempo}: ${state.timerValue}`);
-
-                // Alerta visual: Amarillo si queda poco tiempo
-                if(state.timerValue <= 5) {
-                    timerEl.setAttribute('troika-text', 'color', '#FFFF00'); 
-                }
-
-                if(state.timerValue <= 0) {
-                    clearInterval(state.timerInterval);
+                if(timeLeft <= 0) {
+                    this.stopTimer();
                     this.handleTimeout();
                 }
-            }, 1000);
+            }, 100); // Ejecutar cada 100ms
+        },
+
+        stopTimer: function() {
+            if(state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
         },
 
         handleTimeout: function() {
+            if(state.isAnswered) return;
             state.isAnswered = true;
             this.soundFail.components.sound.playSound(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
+            
+            // Mostrar respuesta correcta en verde
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
+            
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
         },
 
         loadQuestion: function() {
             state.isAnswered = false;
+            this.stopTimer();
+
             const lista = DATABASE[state.lang].preguntas;
             
             if(state.qIndex >= lista.length) { 
-                if(state.timerInterval) clearInterval(state.timerInterval);
                 this.showEndScreen(); 
                 return; 
             }
@@ -186,6 +200,9 @@
             document.querySelector('#txt-contador').setAttribute('troika-text', 'value', `${state.qIndex + 1} / ${lista.length}`);
             document.querySelector('#txt-pregunta').setAttribute('troika-text', 'value', q.q);
             
+            // Iniciar barra de tiempo
+            this.startTimer();
+
             for(let i=0; i<4; i++) {
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
@@ -204,13 +221,12 @@
                     txt.setAttribute('visible', false);
                 }
             }
-            this.startTimer();
         },
 
         checkAnswer: function(idx) {
             if(state.isAnswered) return;
             state.isAnswered = true;
-            if(state.timerInterval) clearInterval(state.timerInterval);
+            this.stopTimer(); // Detener la barra
 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
             const btn = document.querySelector(`#btn-op-${idx}`);
@@ -228,6 +244,7 @@
         },
 
         showEndScreen: function() {
+            this.stopTimer();
             this.transicion(this.gameUI, this.endUI);
             const total = DATABASE[state.lang].preguntas.length;
             document.querySelector('#txt-score-final').setAttribute('troika-text', 'value', `${state.score} / ${total}`);
@@ -322,8 +339,9 @@
             <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06" troika-text="value: 1 / 10"></a-entity>
         </a-entity>
 
-        <a-entity position="2.0 2.2 0">
-            <a-entity id="txt-timer" mixin="txt-white" position="0 0 0.06" troika-text="value: TIEMPO: 20; fontSize: 0.25; color: #FFF; outlineWidth: 0.005; outlineColor: #000"></a-entity>
+        <a-entity position="0 0.35 0">
+             <a-box width="6" height="0.1" depth="0.05" color="#333"></a-box>
+             <a-box id="timer-bar" width="6" height="0.1" depth="0.06" color="#4CAF50" position="0 0 0.01"></a-box>
         </a-entity>
 
         <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
