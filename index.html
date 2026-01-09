@@ -20,7 +20,12 @@
                 btn_es: "ESPAÑOL", 
                 btn_en: "ENGLISH",
                 score: "PUNTAJE FINAL", 
-                restart: "VOLVER A JUGAR"
+                restart: "VOLVER A JUGAR",
+                // Mensajes según puntaje
+                msg_perfecto: "¡EXCELENTE!",
+                msg_alto: "¡MUY BIEN!",
+                msg_medio: "¡BIEN HECHO!",
+                msg_bajo: "¡PUEDES MEJORAR!"
             },
             preguntas: [
                 { q: "¿Quién descubrió América?", ops: ["Cristóbal Colón", "Américo Vespucio", "Magallanes", "Marco Polo"], ans: 0 },
@@ -43,7 +48,12 @@
                 btn_es: "SPANISH",
                 btn_en: "ENGLISH",
                 score: "FINAL SCORE", 
-                restart: "PLAY AGAIN"
+                restart: "PLAY AGAIN",
+                // Messages by score
+                msg_perfecto: "EXCELLENT!",
+                msg_alto: "VERY GOOD!",
+                msg_medio: "WELL DONE!",
+                msg_bajo: "KEEP TRYING!"
             },
             preguntas: [
                 { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
@@ -66,7 +76,8 @@
           score: 0, 
           isAnswered: false, 
           musicStarted: false,
-          timerInterval: null
+          timerInterval: null,
+          confettiElements: [] 
       };
 
       AFRAME.registerComponent('game-logic', {
@@ -77,12 +88,21 @@
             this.bgMusic = document.querySelector('#bg-music');
             this.soundWin = document.querySelector('#sound-win');
             this.soundFail = document.querySelector('#sound-fail');
-            
-            // Referencias a la barra de tiempo
             this.timerBar = document.querySelector('#timer-bar');
+            this.scene = document.querySelector('a-scene');
             
             this.updateMenuTexts('ES'); 
-            this.resetGame();
+            
+            // Estado inicial visual
+            this.gameUI.setAttribute('visible', false); 
+            this.gameUI.setAttribute('position', '0 -999 0');
+            this.endUI.setAttribute('visible', false); 
+            this.endUI.setAttribute('position', '0 -999 0');
+            
+            this.menuLang.setAttribute('visible', true);
+            this.menuLang.setAttribute('position', '0 1.6 -4'); 
+            this.menuLang.setAttribute('scale', '0.1 0.1 0.1'); 
+            this.menuLang.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
         },
         
         updateMenuTexts: function(lang) {
@@ -102,68 +122,47 @@
         },
 
         resetGame: function() {
-            this.stopTimer();
-            
-            state.qIndex = 0; 
-            state.score = 0; 
-            state.isAnswered = false;
-
-            this.gameUI.setAttribute('visible', false); 
-            this.gameUI.setAttribute('position', '0 -999 0');
-            this.endUI.setAttribute('visible', false); 
-            this.endUI.setAttribute('position', '0 -999 0');
-
-            this.menuLang.setAttribute('visible', true);
-            this.menuLang.setAttribute('position', '0 1.6 -4'); 
-            this.menuLang.setAttribute('scale', '0.1 0.1 0.1'); 
-            this.menuLang.setAttribute('animation', 'property: scale; to: 1 1 1; dur: 500; easing: easeOutBack');
+            location.reload(); 
         },
 
         setLang: function(l) {
             this.startMusic();
             state.lang = l;
             const txts = DATABASE[state.lang].ui;
-            
-            document.querySelector('#titulo-score').setAttribute('troika-text', 'value', txts.score);
             document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
-            
             this.transicion(this.menuLang, this.gameUI);
             this.loadQuestion();
         },
 
-        // --- LÓGICA DE LA BARRA DE TIEMPO ---
+        // --- BARRA DE TIEMPO ---
         startTimer: function() {
-            this.stopTimer(); // Limpiar si existe uno previo
+            this.stopTimer(); 
             let timeLeft = 20;
-            const totalWidth = 6; // Ancho visual de la barra
+            const totalWidth = 6; 
 
-            // Reset visual de la barra
             this.timerBar.setAttribute('width', totalWidth);
-            this.timerBar.setAttribute('color', '#4CAF50'); // Verde inicio
+            this.timerBar.setAttribute('color', '#4CAF50'); 
 
             state.timerInterval = setInterval(() => {
                 if(state.isAnswered) return;
-
-                timeLeft -= 0.1; // Restamos 0.1 segundos
-                let pct = Math.max(0, timeLeft / 20); // Porcentaje restante
+                timeLeft -= 0.1; 
+                let pct = Math.max(0, timeLeft / 20); 
                 
-                // Actualizar ancho
                 this.timerBar.setAttribute('width', totalWidth * pct);
 
-                // Cambiar color según tiempo restante
                 if(timeLeft > 10) {
-                    this.timerBar.setAttribute('color', '#4CAF50'); // Verde
+                    this.timerBar.setAttribute('color', '#4CAF50'); 
                 } else if (timeLeft > 5) {
-                    this.timerBar.setAttribute('color', '#FFEB3B'); // Amarillo
+                    this.timerBar.setAttribute('color', '#FFEB3B'); 
                 } else {
-                    this.timerBar.setAttribute('color', '#D32F2F'); // Rojo
+                    this.timerBar.setAttribute('color', '#D32F2F'); 
                 }
 
                 if(timeLeft <= 0) {
                     this.stopTimer();
                     this.handleTimeout();
                 }
-            }, 100); // Ejecutar cada 100ms
+            }, 100); 
         },
 
         stopTimer: function() {
@@ -176,19 +175,15 @@
         handleTimeout: function() {
             if(state.isAnswered) return;
             state.isAnswered = true;
-            this.soundFail.components.sound.playSound(); 
+            if(this.soundFail) this.soundFail.components.sound.playSound(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
-            
-            // Mostrar respuesta correcta en verde
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
-            
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
         },
 
         loadQuestion: function() {
             state.isAnswered = false;
             this.stopTimer();
-
             const lista = DATABASE[state.lang].preguntas;
             
             if(state.qIndex >= lista.length) { 
@@ -199,14 +194,11 @@
             const q = lista[state.qIndex];
             document.querySelector('#txt-contador').setAttribute('troika-text', 'value', `${state.qIndex + 1} / ${lista.length}`);
             document.querySelector('#txt-pregunta').setAttribute('troika-text', 'value', q.q);
-            
-            // Iniciar barra de tiempo
             this.startTimer();
 
             for(let i=0; i<4; i++) {
                 let btn = document.querySelector(`#btn-op-${i}`);
                 let txt = document.querySelector(`#txt-op-${i}`);
-                
                 btn.setAttribute('color', '#B61F25'); 
                 btn.setAttribute('scale', '1 1 1'); 
                 
@@ -226,28 +218,111 @@
         checkAnswer: function(idx) {
             if(state.isAnswered) return;
             state.isAnswered = true;
-            this.stopTimer(); // Detener la barra
-
+            this.stopTimer(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
             const btn = document.querySelector(`#btn-op-${idx}`);
             
             if(idx === q.ans) {
                 state.score++;
-                btn.setAttribute('color', '#4CAF50'); // Verde
+                btn.setAttribute('color', '#4CAF50'); 
                 if(this.soundWin) this.soundWin.components.sound.playSound();
             } else {
-                btn.setAttribute('color', '#8B0000'); // Rojo Oscuro
+                btn.setAttribute('color', '#8B0000'); 
                 document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
         },
 
+        // --- CONFETI NATIVO ---
+        launchConfetti: function() {
+            const colors = ['#FFC107', '#2196F3', '#FF5722', '#4CAF50', '#E91E63'];
+            const confettiCount = 60; 
+
+            for (let i = 0; i < confettiCount; i++) {
+                let confeti = document.createElement('a-plane');
+                let startX = (Math.random() * 8) - 4; 
+                let startY = 6 + (Math.random() * 4); 
+                let startZ = -4 + (Math.random() * 4); 
+                let color = colors[Math.floor(Math.random() * colors.length)];
+                
+                confeti.setAttribute('color', color);
+                confeti.setAttribute('width', '0.08');
+                confeti.setAttribute('height', '0.08');
+                confeti.setAttribute('side', 'double'); 
+                confeti.setAttribute('position', `${startX} ${startY} ${startZ}`);
+                
+                let duration = 3000 + Math.random() * 2000; 
+                
+                confeti.setAttribute('animation__fall', {
+                    property: 'position',
+                    to: `${startX} 0 ${startZ}`,
+                    dur: duration,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                confeti.setAttribute('animation__spin', {
+                    property: 'rotation',
+                    to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
+                    dur: 2000,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                this.scene.appendChild(confeti);
+                state.confettiElements.push(confeti);
+            }
+        },
+
+        // --- PANTALLA FINAL CON LÓGICA DE MENSAJES ---
         showEndScreen: function() {
             this.stopTimer();
             this.transicion(this.gameUI, this.endUI);
             const total = DATABASE[state.lang].preguntas.length;
-            document.querySelector('#txt-score-final').setAttribute('troika-text', 'value', `${state.score} / ${total}`);
+            const uiText = DATABASE[state.lang].ui;
+            
+            let message = "";
+            let colorScore = "#FFFFFF";
+
+            // LOGICA DE PUNTAJES
+            if (state.score === total) {
+                // 10 puntos (Perfecto)
+                message = uiText.msg_perfecto;
+                colorScore = '#FFD700'; // Dorado
+                this.launchConfetti();
+            } else if (state.score >= 8) {
+                // 8 o 9 puntos
+                message = uiText.msg_alto;
+                colorScore = '#4CAF50'; // Verde
+            } else if (state.score >= 4) {
+                // 4 a 7 puntos (Menos de 8)
+                message = uiText.msg_medio;
+                colorScore = '#FFEB3B'; // Amarillo
+            } else {
+                // 0 a 3 puntos (Menos de 4)
+                message = uiText.msg_bajo;
+                colorScore = '#D32F2F'; // Rojo
+            }
+
+            const txtFinal = document.querySelector('#txt-score-final');
+            const finalString = `${message}\n${state.score} / ${total}`;
+
+            txtFinal.setAttribute('troika-text', {
+                value: finalString,
+                color: colorScore
+            });
+            
+            // Animación de latido para el texto (para todos los casos, para darle vida)
+            txtFinal.setAttribute('animation', {
+                property: 'scale',
+                from: '1 1 1',
+                to: '1.2 1.2 1.2',
+                dir: 'alternate',
+                dur: 600,
+                loop: true,
+                easing: 'easeInOutSine'
+            });
         },
 
         transicion: function(salida, entrada) {
@@ -293,7 +368,6 @@
         <audio id="src-fail" src="fail.mp3"></audio>
 
         <a-mixin id="btn-red" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5" material="color: #B61F25"></a-mixin>
-        
         <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8; outlineWidth: 0.0"></a-mixin>
         <a-mixin id="txt-white" troika-text="align: center; color: #FFF; fontSize: 0.25; maxWidth: 4.5; outlineWidth: 0.0"></a-mixin>
       </a-assets>
@@ -315,9 +389,7 @@
       <a-entity id="menu-idioma">
         <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
                   material="color: white; shader: flat" position="0 1.0 -0.1"></a-entity>
-        
         <a-image src="#logo" position="0 2.8 0.1" width="1.8" height="1.8"></a-image>
-        
         <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0.1" troika-text="value: BIENVENIDO; fontSize: 0.4; color: #B61F25"></a-entity>
         <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0.1" troika-text="value: SEMANA INTERNACIONAL ESAN"></a-entity>
         <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0.1" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
@@ -333,23 +405,21 @@
       </a-entity>
 
       <a-entity id="ui-juego" visible="false">
-        
         <a-entity position="0 2.2 0">
             <a-entity geometry="primitive: box; width: 2; height: 0.5; depth: 0.05" material="color: #B61F25"></a-entity>
             <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06" troika-text="value: 1 / 10"></a-entity>
         </a-entity>
 
-        <a-entity position="0 0.35 0">
-             <a-box width="6" height="0.1" depth="0.05" color="#333"></a-box>
-             <a-box id="timer-bar" width="6" height="0.1" depth="0.06" color="#4CAF50" position="0 0 0.01"></a-box>
-        </a-entity>
-
         <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
                   material="color: white; shader: flat" position="0 1.2 -0.1"></a-entity>
-        
-        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.1" troika-text="fontSize: 0.3; value: Cargando..."></a-entity>
+        <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.06" troika-text="fontSize: 0.3; value: Cargando..."></a-entity>
 
-        <a-entity position="0 -0.5 0">
+        <a-entity position="0 0.3 0">
+             <a-box width="6" height="0.15" depth="0.05" color="#333"></a-box>
+             <a-box id="timer-bar" width="6" height="0.15" depth="0.06" color="#4CAF50" position="0 0 0.01"></a-box>
+        </a-entity>
+
+        <a-entity position="0 -0.8 0">
             <a-entity id="btn-op-0" class="clickable" btn-action="type: ans; val: 0" mixin="btn-red" position="-1.4 0.6 0" width="2.6">
                 <a-entity id="txt-op-0" mixin="txt-white" position="0 0 0.06" troika-text="value: A"></a-entity>
             </a-entity>
@@ -369,13 +439,18 @@
         <a-entity geometry="primitive: plane; width: 5; height: 4" 
                   material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
         
-        <a-entity id="titulo-score" mixin="txt-black" position="0 1.5 0.1" troika-text="color: #B61F25; value: PUNTAJE FINAL"></a-entity>
-        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.5 0.1" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.8 0.1" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
 
-        <a-entity class="clickable" btn-action="type: restart; val: 0" position="0 -0.8 0.1">
-            <a-cylinder color="#B61F25" height="0.1" radius="0.8" rotation="30 0 0"></a-cylinder>
-            <a-entity id="txt-restart" mixin="txt-white" position="0 0.05 0.06" rotation="-30 0 0" troika-text="value: VOLVER A JUGAR"></a-entity>
+        <a-entity position="0 -1.0 0.2"
+                  animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; dur: 1000; loop: true">
+            
+            <a-box class="clickable" btn-action="type: restart; val: 0" 
+                   color="#B61F25" width="2.5" height="0.6" depth="0.05"></a-box>
+                   
+            <a-entity id="txt-restart" mixin="txt-white" position="0 0 0.06" 
+                      troika-text="value: VOLVER A JUGAR; fontSize: 0.25"></a-entity>
         </a-entity>
+
       </a-entity>
 
     </a-scene>
