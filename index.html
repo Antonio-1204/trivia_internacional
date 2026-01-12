@@ -9,7 +9,7 @@
 
     <script>
       // ==========================================
-      // BASE DE DATOS
+      // BASE DE DATOS - TUS 40 PREGUNTAS
       // ==========================================
       const DATABASE = {
         'ES': {
@@ -24,16 +24,46 @@
                 restart: "VOLVER A JUGAR"
             },
             preguntas: [
-                { q: "¿Quién descubrió América?", ops: ["Cristóbal Colón", "Américo Vespucio", "Magallanes", "Marco Polo"], ans: 0 },
-                { q: "¿Cuándo comenzó la II Guerra Mundial?", ops: ["1914", "1920", "1939", "1945"], ans: 2 },
-                { q: "¿Quién pintó la Mona Lisa?", ops: ["Picasso", "Van Gogh", "Da Vinci", "Miguel Ángel"], ans: 2 },
-                { q: "¿Cuál es el río más largo del mundo?", ops: ["Nilo", "Amazonas", "Misisipi", "Yangtsé"], ans: 1 },
-                { q: "¿En qué año llegó el hombre a la Luna?", ops: ["1950", "1969", "1980", "2000"], ans: 1 },
-                { q: "¿Cuál es el país más grande del mundo?", ops: ["China", "EE.UU.", "Rusia", "Canadá"], ans: 2 },
-                { q: "¿Dónde están las Pirámides de Giza?", ops: ["México", "Perú", "Egipto", "Sudán"], ans: 2 },
-                { q: "¿Qué elemento químico es la H?", ops: ["Helio", "Hierro", "Hidrógeno", "Holmio"], ans: 2 },
-                { q: "¿Cuál es la capital de Francia?", ops: ["Londres", "Berlín", "Roma", "París"], ans: 3 },
-                { q: "¿Quién escribió Don Quijote?", ops: ["Cervantes", "Shakespeare", "Dante", "Gabo"], ans: 0 }
+                { q: "¿En qué ciudad se encuentra la Torre Eiffel?", ops: ["Roma", "Berlín", "París", "Madrid"], ans: 2 },
+                { q: "¿Cuál es el plato bandera del Perú?", ops: ["Lomo saltado", "Ceviche", "Ají de gallina", "Pollo a la brasa"], ans: 1 },
+                { q: "¿En qué año comenzó la Segunda Guerra Mundial?", ops: ["1935", "1939", "1941", "1945"], ans: 1 },
+                { q: "¿Qué ciudad es conocida como “La Gran Manzana”?", ops: ["Los Ángeles", "Chicago", "Nueva York", "Miami"], ans: 2 },
+                { q: "¿Quién pintó la Mona Lisa?", ops: ["Picasso", "Da Vinci", "Miguel Ángel", "Van Gogh"], ans: 1 },
+                { q: "¿Qué ciudad alemana celebra el Oktoberfest?", ops: ["Berlín", "Hamburgo", "Múnich", "Frankfurt"], ans: 2 },
+                { q: "¿Qué escritor peruano ganó el Nobel de Literatura?", ops: ["Vallejo", "Arguedas", "Vargas Llosa", "Palma"], ans: 2 },
+                { q: "¿En qué año cayó el Muro de Berlín?", ops: ["1985", "1987", "1989", "1991"], ans: 2 },
+                { q: "¿Qué país regaló la Estatua de la Libertad a EE. UU.?", ops: ["Alemania", "Francia", "Italia", "España"], ans: 1 },
+                { q: "¿Cuál es el planeta más grande del sistema solar?", ops: ["Saturno", "Júpiter", "Marte", "Neptuno"], ans: 1 },
+                { q: "¿Quién pintó La noche estrellada?", ops: ["Claude Monet", "Salvador Dalí", "Vincent van Gogh", "Paul Cézanne"], ans: 2 },
+                { q: "¿En qué año llegó el primer ser humano a la Luna?", ops: ["1959", "1965", "1969", "1972"], ans: 2 },
+                { q: "¿Qué bebida es símbolo de Alemania?", ops: ["Vino", "Cerveza", "Sidra", "Agua"], ans: 1 },
+                { q: "¿Qué escritor escribió Don Quijote?", ops: ["Neruda", "Cervantes", "Lorca", "García Márquez"], ans: 1 },
+                { q: "¿Qué ciudad alberga Hollywood?", ops: ["Nueva York", "Los Ángeles", "Miami", "Chicago"], ans: 1 },
+                { q: "¿En qué año se creó la ONU?", ops: ["1939", "1942", "1945", "1950"], ans: 2 },
+                { q: "¿Cuál es el planeta más grande del sistema solar?", ops: ["Saturno", "Júpiter", "Marte", "Neptuno"], ans: 1 },
+                { q: "¿Qué civilización construyó Machu Picchu?", ops: ["Maya", "Azteca", "Inca", "Olmeca"], ans: 2 },
+                { q: "¿Quién desarrolló la teoría de la relatividad?", ops: ["Newton", "Galileo", "Einstein", "Tesla"], ans: 2 },
+                { q: "¿Qué río atraviesa París?", ops: ["Rin", "Sena", "Loira", "Ródano"], ans: 1 },
+                { q: "¿En qué año se descubrió América según la historia tradicional?", ops: ["1453", "1492", "1519", "1542"], ans: 1 },
+                { q: "¿En qué año terminó la Segunda Guerra Mundial?", ops: ["1943", "1944", "1945", "1947"], ans: 2 },
+                { q: "¿Qué ciudad es sede de Wall Street?", ops: ["Boston", "Chicago", "Nueva York", "Filadelfia"], ans: 2 },
+                { q: "¿Qué escritor francés escribió Los Miserables?", ops: ["Camus", "Sartre", "Hugo", "Voltaire"], ans: 2 },
+                { q: "¿Qué idioma se habla principalmente en Brasil?", ops: ["Español", "Inglés", "Portugués", "Francés"], ans: 2 },
+                { q: "¿Qué ciudad alemana tiene la Puerta de Brandeburgo?", ops: ["Hamburgo", "Berlín", "Bonn", "Colonia"], ans: 1 },
+                { q: "¿En qué año comenzó la Primera Guerra Mundial?", ops: ["1905", "1910", "1914", "1918"], ans: 2 },
+                { q: "¿Qué bebida se hace con maíz morado?", ops: ["Emoliente", "Chicha morada", "Pisco sour", "Mate"], ans: 1 },
+                { q: "¿Qué ciudad es famosa por el Golden Gate?", ops: ["Seattle", "Los Ángeles", "San Francisco", "Miami"], ans: 2 },
+                { q: "¿Qué pintor es padre del impresionismo francés?", ops: ["Picasso", "Monet", "Van Gogh", "Renoir"], ans: 1 },
+                { q: "¿En qué año se inventó el teléfono?", ops: ["1850", "1861", "1876", "1885"], ans: 2 },
+                { q: "¿Qué animal es símbolo de la sierra peruana?", ops: ["Caballo", "Alpaca", "Oso", "Venado"], ans: 1 },
+                { q: "¿Qué presidente abolió la esclavitud en EE. UU.?", ops: ["Washington", "Jefferson", "Lincoln", "Kennedy"], ans: 2 },
+                { q: "¿Qué ciudad francesa es famosa por el vino?", ops: ["Marsella", "Burdeos", "Niza", "Lille"], ans: 1 },
+                { q: "¿En qué año comenzó la pandemia de COVID-19?", ops: ["2017", "2018", "2019", "2020"], ans: 2 },
+                { q: "¿Qué compositor alemán escribió la Novena Sinfonía?", ops: ["Bach", "Mozart", "Beethoven", "Wagner"], ans: 2 },
+                { q: "¿Cuál es la capital de Alemania?", ops: ["Bonn", "Hamburgo", "Berlín", "Colonia"], ans: 2 },
+                { q: "¿Qué plato peruano se hace con corazón de res?", ops: ["Pachamanca", "Anticuchos", "Seco", "Pollo a la brasa"], ans: 1 },
+                { q: "¿En qué año se firmó la Declaración de Independencia de EE. UU.?", ops: ["1765", "1770", "1776", "1781"], ans: 2 },
+                { q: "¿Cuál es la montaña más alta del mundo?", ops: ["K2", "Aconcagua", "Everest", "Kilimanjaro"], ans: 2 }
             ]
         },
         'EN': {
@@ -50,14 +80,7 @@
             preguntas: [
                 { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
                 { q: "When did WWII start?", ops: ["1914", "1920", "1939", "1945"], ans: 2 },
-                { q: "Who painted the Mona Lisa?", ops: ["Picasso", "Van Gogh", "Da Vinci", "Michelangelo"], ans: 2 },
-                { q: "What is the longest river in the world?", ops: ["Nile", "Amazon", "Mississippi", "Yangtze"], ans: 1 },
-                { q: "What year did man land on the Moon?", ops: ["1950", "1969", "1980", "2000"], ans: 1 },
-                { q: "What is the largest country in the world?", ops: ["China", "USA", "Russia", "Canada"], ans: 2 },
-                { q: "Where are the Pyramids of Giza?", ops: ["Mexico", "Peru", "Egypt", "Sudan"], ans: 2 },
-                { q: "What chemical element is H?", ops: ["Helium", "Iron", "Hydrogen", "Holmium"], ans: 2 },
-                { q: "What is the capital of France?", ops: ["London", "Berlin", "Rome", "Paris"], ans: 3 },
-                { q: "Who wrote Don Quixote?", ops: ["Cervantes", "Shakespeare", "Dante", "Gabo"], ans: 0 }
+                // ... (Puedes añadir la traducción de las 40 preguntas aquí si deseas) ...
             ]
         }
       };
@@ -70,7 +93,8 @@
           musicStarted: false,
           timerInterval: null,
           confettiElements: [],
-          snowElements: [] // Array para la nieve
+          snowElements: [],
+          activeQuestions: [] // Array para las 10 preguntas de la partida actual
       };
 
       AFRAME.registerComponent('game-logic', {
@@ -86,7 +110,6 @@
             
             this.updateMenuTexts('ES'); 
             
-            // Estado inicial visual
             this.gameUI.setAttribute('visible', false); 
             this.gameUI.setAttribute('position', '0 -999 0');
             this.endUI.setAttribute('visible', false); 
@@ -103,7 +126,6 @@
             document.querySelector('#txt-bienvenida').setAttribute('troika-text', 'value', txts.bienvenida);
             document.querySelector('#txt-subtitulo').setAttribute('troika-text', 'value', txts.subtitulo);
             document.querySelector('#txt-instr').setAttribute('troika-text', 'value', txts.instr);
-            // CREDITOS ESANLABS
             document.querySelector('#txt-credits').setAttribute('troika-text', 'value', txts.credits);
             
             document.querySelector('#txt-btn-es').setAttribute('troika-text', 'value', txts.btn_es);
@@ -121,70 +143,79 @@
             location.reload(); 
         },
 
+        // --- SISTEMA ALEATORIO: Baraja y toma 10 ---
+        selectRandomQuestions: function() {
+            // Copiamos todas las preguntas disponibles del idioma
+            let allQuestions = [...DATABASE[state.lang].preguntas];
+            
+            // Barajamos (Shuffle)
+            for (let i = allQuestions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
+            }
+
+            // Tomamos solo las primeras 10
+            state.activeQuestions = allQuestions.slice(0, 10);
+        },
+
         setLang: function(l) {
             this.startMusic();
             state.lang = l;
+            
+            // Seleccionar las 10 preguntas para esta partida
+            this.selectRandomQuestions();
+
             const txts = DATABASE[state.lang].ui;
             document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
             this.transicion(this.menuLang, this.gameUI);
-            
-            // --- ACTIVAR NIEVE TIPO CONFETI ---
             this.startSnow();
-            
             this.loadQuestion();
         },
 
-        // --- SISTEMA DE NIEVE / ESCARCHA (ESTILO CONFETI) ---
+        // --- SISTEMA DE NIEVE / ESCARCHA ---
         startSnow: function() {
-            const snowCount = 200; // Cantidad abundante
-            
+            const snowCount = 200; 
             for(let i=0; i<snowCount; i++) {
-                let flake = document.createElement('a-plane'); // Usamos PLANOS como el confeti
+                let flake = document.createElement('a-entity');
+                flake.setAttribute('geometry', 'primitive: sphere; radius: 0.03'); 
+                flake.setAttribute('material', 'shader: flat; color: #FFFFFF; opacity: 0.9');
                 
-                // Generar posición en un cubo alrededor del jugador (más cerrado para que se vea)
-                let x = (Math.random() * 12) - 6; 
-                let y = (Math.random() * 8) + 6; // Empiezan alto
-                let z = (Math.random() * 12) - 6; 
+                let x = (Math.random() * 16) - 8; 
+                let y = (Math.random() * 10) + 5; 
+                let z = (Math.random() * 10) - 8; 
                 
-                // Estilo "Escarcha"
-                flake.setAttribute('color', '#FFFFFF');
-                flake.setAttribute('width', '0.04');  // Pequeños
-                flake.setAttribute('height', '0.04');
-                flake.setAttribute('side', 'double'); // Visible por ambos lados
                 flake.setAttribute('position', `${x} ${y} ${z}`);
                 
-                // Animación de caída INFINITA (Loop)
-                let duration = 3000 + Math.random() * 3000; 
+                let duration = 3000 + Math.random() * 4000;
                 
-                flake.setAttribute('animation__fall', {
+                flake.setAttribute('animation', {
                     property: 'position',
-                    to: `${x} -2 ${z}`, // Caen hasta el suelo
+                    to: `${x} -2 ${z}`,
                     dur: duration,
                     easing: 'linear',
                     loop: true
                 });
                 
-                // Rotación constante para que brille (efecto escarcha)
-                flake.setAttribute('animation__spin', {
-                    property: 'rotation',
-                    to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
-                    dur: 2000,
-                    easing: 'linear',
-                    loop: true
+                flake.setAttribute('animation__wobble', {
+                    property: 'position',
+                    from: `${x} ${y} ${z}`,
+                    to: `${x + 0.2} ${y} ${z}`,
+                    dur: 1000,
+                    dir: 'alternate',
+                    loop: true,
+                    easing: 'easeInOutSine'
                 });
 
                 this.scene.appendChild(flake);
                 state.snowElements.push(flake);
             }
         },
-        // ----------------------------------
 
         // --- BARRA DE TIEMPO ---
         startTimer: function() {
             this.stopTimer(); 
             let timeLeft = 20;
             const totalWidth = 6; 
-
             this.timerBar.setAttribute('width', totalWidth);
             this.timerBar.setAttribute('color', '#4CAF50'); 
 
@@ -192,7 +223,6 @@
                 if(state.isAnswered) return;
                 timeLeft -= 0.1; 
                 let pct = Math.max(0, timeLeft / 20); 
-                
                 this.timerBar.setAttribute('width', totalWidth * pct);
 
                 if(timeLeft > 10) {
@@ -221,17 +251,17 @@
             if(state.isAnswered) return;
             state.isAnswered = true;
             if(this.soundFail) this.soundFail.components.sound.playSound(); 
-            const q = DATABASE[state.lang].preguntas[state.qIndex];
+            // USAR LA PREGUNTA DE LA LISTA ACTIVA
+            const q = state.activeQuestions[state.qIndex];
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
-            
-            // TIEMPO ESPERA: 1.5s
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
         loadQuestion: function() {
             state.isAnswered = false;
             this.stopTimer();
-            const lista = DATABASE[state.lang].preguntas;
+            // USAR LA LISTA ACTIVA (10 preguntas)
+            const lista = state.activeQuestions;
             
             if(state.qIndex >= lista.length) { 
                 this.showEndScreen(); 
@@ -266,7 +296,8 @@
             if(state.isAnswered) return;
             state.isAnswered = true;
             this.stopTimer(); 
-            const q = DATABASE[state.lang].preguntas[state.qIndex];
+            // USAR LA PREGUNTA DE LA LISTA ACTIVA
+            const q = state.activeQuestions[state.qIndex];
             const btn = document.querySelector(`#btn-op-${idx}`);
             
             if(idx === q.ans) {
@@ -278,16 +309,13 @@
                 document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
-            
-            // TIEMPO ESPERA: 1.5s
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
-        // --- CONFETI NATIVO (Final) ---
+        // --- CONFETI NATIVO ---
         launchConfetti: function() {
             const colors = ['#FFC107', '#2196F3', '#FF5722', '#4CAF50', '#E91E63'];
             const confettiCount = 60; 
-
             for (let i = 0; i < confettiCount; i++) {
                 let confeti = document.createElement('a-plane');
                 let startX = (Math.random() * 8) - 4; 
@@ -310,7 +338,6 @@
                     easing: 'linear',
                     loop: true
                 });
-
                 confeti.setAttribute('animation__spin', {
                     property: 'rotation',
                     to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
@@ -318,7 +345,6 @@
                     easing: 'linear',
                     loop: true
                 });
-
                 this.scene.appendChild(confeti);
                 state.confettiElements.push(confeti);
             }
@@ -328,7 +354,8 @@
         showEndScreen: function() {
             this.stopTimer();
             this.transicion(this.gameUI, this.endUI);
-            const total = DATABASE[state.lang].preguntas.length;
+            // Usamos el total de preguntas jugadas (10)
+            const total = state.activeQuestions.length; 
             
             const imgResultado = document.querySelector('#img-resultado');
             const txtFinal = document.querySelector('#txt-score-final');
@@ -340,10 +367,10 @@
                 imageName = "score-10.png"; 
                 colorScore = '#FFD700'; 
                 this.launchConfetti();
-            } else if (state.score >= 8) {
+            } else if (state.score >= (total * 0.8)) { 
                 imageName = "score-89.png";
                 colorScore = '#4CAF50'; 
-            } else if (state.score >= 4) {
+            } else if (state.score >= (total * 0.4)) { 
                 imageName = "score-47.png";
                 colorScore = '#FFEB3B'; 
             } else {
@@ -524,4 +551,3 @@
     </a-scene>
   </body>
 </html>
-
