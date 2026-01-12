@@ -17,15 +17,11 @@
                 bienvenida: "BIENVENIDO", 
                 subtitulo: "SEMANA INTERNACIONAL ESAN",
                 instr: "SELECCIONA TU IDIOMA",
+                credits: "Desarrollado por EsanLabs", 
                 btn_es: "ESPAÑOL", 
                 btn_en: "ENGLISH",
                 score: "PUNTAJE FINAL", 
-                restart: "VOLVER A JUGAR",
-                // Mensajes según puntaje
-                msg_perfecto: "¡EXCELENTE!",
-                msg_alto: "¡MUY BIEN!",
-                msg_medio: "¡BIEN HECHO!",
-                msg_bajo: "¡PUEDES MEJORAR!"
+                restart: "VOLVER A JUGAR"
             },
             preguntas: [
                 { q: "¿Quién descubrió América?", ops: ["Cristóbal Colón", "Américo Vespucio", "Magallanes", "Marco Polo"], ans: 0 },
@@ -45,15 +41,11 @@
                 bienvenida: "WELCOME", 
                 subtitulo: "ESAN INTERNATIONAL WEEK",
                 instr: "SELECT YOUR LANGUAGE",
+                credits: "Developed by EsanLabs",
                 btn_es: "SPANISH",
                 btn_en: "ENGLISH",
                 score: "FINAL SCORE", 
-                restart: "PLAY AGAIN",
-                // Messages by score
-                msg_perfecto: "EXCELLENT!",
-                msg_alto: "VERY GOOD!",
-                msg_medio: "WELL DONE!",
-                msg_bajo: "KEEP TRYING!"
+                restart: "PLAY AGAIN"
             },
             preguntas: [
                 { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
@@ -77,7 +69,8 @@
           isAnswered: false, 
           musicStarted: false,
           timerInterval: null,
-          confettiElements: [] 
+          confettiElements: [],
+          snowElements: [] // Array para la nieve
       };
 
       AFRAME.registerComponent('game-logic', {
@@ -110,6 +103,9 @@
             document.querySelector('#txt-bienvenida').setAttribute('troika-text', 'value', txts.bienvenida);
             document.querySelector('#txt-subtitulo').setAttribute('troika-text', 'value', txts.subtitulo);
             document.querySelector('#txt-instr').setAttribute('troika-text', 'value', txts.instr);
+            // CREDITOS ESANLABS
+            document.querySelector('#txt-credits').setAttribute('troika-text', 'value', txts.credits);
+            
             document.querySelector('#txt-btn-es').setAttribute('troika-text', 'value', txts.btn_es);
             document.querySelector('#txt-btn-en').setAttribute('troika-text', 'value', txts.btn_en);
         },
@@ -131,8 +127,57 @@
             const txts = DATABASE[state.lang].ui;
             document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
             this.transicion(this.menuLang, this.gameUI);
+            
+            // --- ACTIVAR NIEVE TIPO CONFETI ---
+            this.startSnow();
+            
             this.loadQuestion();
         },
+
+        // --- SISTEMA DE NIEVE / ESCARCHA (ESTILO CONFETI) ---
+        startSnow: function() {
+            const snowCount = 200; // Cantidad abundante
+            
+            for(let i=0; i<snowCount; i++) {
+                let flake = document.createElement('a-plane'); // Usamos PLANOS como el confeti
+                
+                // Generar posición en un cubo alrededor del jugador (más cerrado para que se vea)
+                let x = (Math.random() * 12) - 6; 
+                let y = (Math.random() * 8) + 6; // Empiezan alto
+                let z = (Math.random() * 12) - 6; 
+                
+                // Estilo "Escarcha"
+                flake.setAttribute('color', '#FFFFFF');
+                flake.setAttribute('width', '0.04');  // Pequeños
+                flake.setAttribute('height', '0.04');
+                flake.setAttribute('side', 'double'); // Visible por ambos lados
+                flake.setAttribute('position', `${x} ${y} ${z}`);
+                
+                // Animación de caída INFINITA (Loop)
+                let duration = 3000 + Math.random() * 3000; 
+                
+                flake.setAttribute('animation__fall', {
+                    property: 'position',
+                    to: `${x} -2 ${z}`, // Caen hasta el suelo
+                    dur: duration,
+                    easing: 'linear',
+                    loop: true
+                });
+                
+                // Rotación constante para que brille (efecto escarcha)
+                flake.setAttribute('animation__spin', {
+                    property: 'rotation',
+                    to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
+                    dur: 2000,
+                    easing: 'linear',
+                    loop: true
+                });
+
+                this.scene.appendChild(flake);
+                state.snowElements.push(flake);
+            }
+        },
+        // ----------------------------------
 
         // --- BARRA DE TIEMPO ---
         startTimer: function() {
@@ -178,7 +223,9 @@
             if(this.soundFail) this.soundFail.components.sound.playSound(); 
             const q = DATABASE[state.lang].preguntas[state.qIndex];
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
-            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
+            
+            // TIEMPO ESPERA: 1.5s
+            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
         loadQuestion: function() {
@@ -231,10 +278,12 @@
                 document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
                 if(this.soundFail) this.soundFail.components.sound.playSound();
             }
-            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 2500);
+            
+            // TIEMPO ESPERA: 1.5s
+            setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
-        // --- CONFETI NATIVO ---
+        // --- CONFETI NATIVO (Final) ---
         launchConfetti: function() {
             const colors = ['#FFC107', '#2196F3', '#FF5722', '#4CAF50', '#E91E63'];
             const confettiCount = 60; 
@@ -275,45 +324,40 @@
             }
         },
 
-        // --- PANTALLA FINAL CON LÓGICA DE MENSAJES ---
+        // --- PANTALLA FINAL ---
         showEndScreen: function() {
             this.stopTimer();
             this.transicion(this.gameUI, this.endUI);
             const total = DATABASE[state.lang].preguntas.length;
-            const uiText = DATABASE[state.lang].ui;
             
-            let message = "";
+            const imgResultado = document.querySelector('#img-resultado');
+            const txtFinal = document.querySelector('#txt-score-final');
+            
+            let imageName = "";
             let colorScore = "#FFFFFF";
 
-            // LOGICA DE PUNTAJES
             if (state.score === total) {
-                // 10 puntos (Perfecto)
-                message = uiText.msg_perfecto;
-                colorScore = '#FFD700'; // Dorado
+                imageName = "score-10.png"; 
+                colorScore = '#FFD700'; 
                 this.launchConfetti();
             } else if (state.score >= 8) {
-                // 8 o 9 puntos
-                message = uiText.msg_alto;
-                colorScore = '#4CAF50'; // Verde
+                imageName = "score-89.png";
+                colorScore = '#4CAF50'; 
             } else if (state.score >= 4) {
-                // 4 a 7 puntos (Menos de 8)
-                message = uiText.msg_medio;
-                colorScore = '#FFEB3B'; // Amarillo
+                imageName = "score-47.png";
+                colorScore = '#FFEB3B'; 
             } else {
-                // 0 a 3 puntos (Menos de 4)
-                message = uiText.msg_bajo;
-                colorScore = '#D32F2F'; // Rojo
+                imageName = "score-03.png";
+                colorScore = '#D32F2F'; 
             }
 
-            const txtFinal = document.querySelector('#txt-score-final');
-            const finalString = `${message}\n${state.score} / ${total}`;
+            imgResultado.setAttribute('src', imageName);
 
             txtFinal.setAttribute('troika-text', {
-                value: finalString,
+                value: `${state.score} / ${total}`,
                 color: colorScore
             });
             
-            // Animación de latido para el texto (para todos los casos, para darle vida)
             txtFinal.setAttribute('animation', {
                 property: 'scale',
                 from: '1 1 1',
@@ -387,19 +431,41 @@
       </a-entity>
 
       <a-entity id="menu-idioma">
-        <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
-                  material="color: white; shader: flat" position="0 1.0 -0.1"></a-entity>
-        <a-image src="#logo" position="0 2.8 0.1" width="1.8" height="1.8"></a-image>
-        <a-entity id="txt-bienvenida" mixin="txt-black" position="0 1.7 0.1" troika-text="value: BIENVENIDO; fontSize: 0.4; color: #B61F25"></a-entity>
-        <a-entity id="txt-subtitulo" mixin="txt-black" position="0 1.3 0.1" troika-text="value: SEMANA INTERNACIONAL ESAN"></a-entity>
-        <a-entity id="txt-instr" mixin="txt-black" position="0 0.8 0.1" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
+        <a-entity animation="property: position; from: 0 0 0; to: 0 0.05 0; dir: alternate; dur: 3000; loop: true">
+            
+            <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
+                      material="color: white; shader: flat" position="0 0 -0.1"></a-entity>
+            
+            <a-image src="#logo" position="0 1.8 0.1" width="3" height="1.5"></a-image>
+            
+            <a-entity id="txt-bienvenida" mixin="txt-black" position="0 0.6 0.1" 
+                      troika-text="value: BIENVENIDO; fontSize: 0.5; color: #B61F25; outlineWidth: 0.005"></a-entity>
+            
+            <a-entity id="txt-subtitulo" mixin="txt-black" position="0 0 0.1" 
+                      troika-text="value: SEMANA INTERNACIONAL ESAN; fontSize: 0.28"></a-entity>
+            
+            <a-entity id="txt-instr" mixin="txt-black" position="0 -0.6 0.1" 
+                      troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
 
-        <a-entity position="0 0 0">
-            <a-entity class="clickable" btn-action="type: lang; val: ES" mixin="btn-red" position="-1.4 0.2 0">
-                <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06" troika-text="value: ESPAÑOL"></a-entity>
-            </a-entity>
-            <a-entity class="clickable" btn-action="type: lang; val: EN" mixin="btn-red" position="1.4 0.2 0">
-                <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06" troika-text="value: ENGLISH"></a-entity>
+            <a-entity id="txt-credits" mixin="txt-black" position="0 -0.9 0.1" 
+                      troika-text="value: Desarrollado por EsanLabs; fontSize: 0.15; color: #888; font-style: italic"></a-entity>
+
+            <a-entity position="0 -1.5 0">
+                <a-entity position="-1.4 0 0" 
+                          animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
+                    <a-box class="clickable" btn-action="type: lang; val: ES" 
+                           color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
+                    <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06" 
+                              troika-text="value: ESPAÑOL; fontSize: 0.35"></a-entity>
+                </a-entity>
+
+                <a-entity position="1.4 0 0"
+                          animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true; delay: 500">
+                    <a-box class="clickable" btn-action="type: lang; val: EN" 
+                           color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
+                    <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06" 
+                              troika-text="value: ENGLISH; fontSize: 0.35"></a-entity>
+                </a-entity>
             </a-entity>
         </a-entity>
       </a-entity>
@@ -439,7 +505,9 @@
         <a-entity geometry="primitive: plane; width: 5; height: 4" 
                   material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
         
-        <a-entity id="txt-score-final" mixin="txt-black" position="0 0.8 0.1" troika-text="color: #4CAF50; fontSize: 0.6; value: 0 / 10"></a-entity>
+        <a-image id="img-resultado" position="0 1.2 0.2" width="1.8" height="2.5"></a-image>
+
+        <a-entity id="txt-score-final" mixin="txt-black" position="0 -0.3 0.2" troika-text="color: #4CAF50; fontSize: 0.4; value: 0 / 10"></a-entity>
 
         <a-entity position="0 -1.0 0.2"
                   animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
@@ -448,7 +516,7 @@
                    color="#B61F25" width="2.5" height="0.6" depth="0.05"></a-box>
                    
             <a-entity id="txt-restart" mixin="txt-white" position="0 0 0.06" 
-                      troika-text="value: VOLVER A JUGAR; fontSize: 0.35"></a-entity>
+                      troika-text="value: VOLVER A JUGAR; fontSize: 0.25"></a-entity>
         </a-entity>
 
       </a-entity>
