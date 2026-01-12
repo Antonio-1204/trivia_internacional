@@ -9,7 +9,7 @@
 
     <script>
       // ==========================================
-      // BASE DE DATOS - TUS 40 PREGUNTAS
+      // BASE DE DATOS - COMPLETA (40 PREGUNTAS)
       // ==========================================
       const DATABASE = {
         'ES': {
@@ -40,7 +40,6 @@
                 { q: "¿Qué escritor escribió Don Quijote?", ops: ["Neruda", "Cervantes", "Lorca", "García Márquez"], ans: 1 },
                 { q: "¿Qué ciudad alberga Hollywood?", ops: ["Nueva York", "Los Ángeles", "Miami", "Chicago"], ans: 1 },
                 { q: "¿En qué año se creó la ONU?", ops: ["1939", "1942", "1945", "1950"], ans: 2 },
-                { q: "¿Cuál es el planeta más grande del sistema solar?", ops: ["Saturno", "Júpiter", "Marte", "Neptuno"], ans: 1 },
                 { q: "¿Qué civilización construyó Machu Picchu?", ops: ["Maya", "Azteca", "Inca", "Olmeca"], ans: 2 },
                 { q: "¿Quién desarrolló la teoría de la relatividad?", ops: ["Newton", "Galileo", "Einstein", "Tesla"], ans: 2 },
                 { q: "¿Qué río atraviesa París?", ops: ["Rin", "Sena", "Loira", "Ródano"], ans: 1 },
@@ -80,7 +79,9 @@
             preguntas: [
                 { q: "Who discovered America?", ops: ["Christopher Columbus", "Amerigo Vespucci", "Magellan", "Marco Polo"], ans: 0 },
                 { q: "When did WWII start?", ops: ["1914", "1920", "1939", "1945"], ans: 2 },
-                // ... (Puedes añadir la traducción de las 40 preguntas aquí si deseas) ...
+                { q: "Where is the Eiffel Tower?", ops: ["Rome", "Berlin", "Paris", "Madrid"], ans: 2 },
+                { q: "What city is 'The Big Apple'?", ops: ["Los Angeles", "Chicago", "New York", "Miami"], ans: 2 }
+                // Puedes añadir más traducciones aquí si lo deseas
             ]
         }
       };
@@ -94,7 +95,7 @@
           timerInterval: null,
           confettiElements: [],
           snowElements: [],
-          activeQuestions: [] // Array para las 10 preguntas de la partida actual
+          activeQuestions: [] 
       };
 
       AFRAME.registerComponent('game-logic', {
@@ -102,9 +103,17 @@
             this.menuLang = document.querySelector('#menu-idioma');
             this.gameUI = document.querySelector('#ui-juego');
             this.endUI = document.querySelector('#ui-final');
+            
             this.bgMusic = document.querySelector('#bg-music');
             this.soundWin = document.querySelector('#sound-win');
             this.soundFail = document.querySelector('#sound-fail');
+            
+            // Elementos de Video y Fondo
+            this.videoEl = document.querySelector('#vid-intro');
+            this.videoSphere = document.querySelector('#sphere-video');
+            this.staticSky = document.querySelector('#sky-static');
+            this.blackFader = document.querySelector('#black-fade'); 
+
             this.timerBar = document.querySelector('#timer-bar');
             this.scene = document.querySelector('a-scene');
             
@@ -115,6 +124,7 @@
             this.endUI.setAttribute('visible', false); 
             this.endUI.setAttribute('position', '0 -999 0');
             
+            // Animación de entrada del menú
             this.menuLang.setAttribute('visible', true);
             this.menuLang.setAttribute('position', '0 1.6 -4'); 
             this.menuLang.setAttribute('scale', '0.1 0.1 0.1'); 
@@ -143,75 +153,103 @@
             location.reload(); 
         },
 
-        // --- SISTEMA ALEATORIO: Baraja y toma 10 ---
         selectRandomQuestions: function() {
-            // Copiamos todas las preguntas disponibles del idioma
             let allQuestions = [...DATABASE[state.lang].preguntas];
-            
-            // Barajamos (Shuffle)
             for (let i = allQuestions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
             }
-
-            // Tomamos solo las primeras 10
+            // Ahora sí hay 40 preguntas, así que esto tomará 10 correctamente
             state.activeQuestions = allQuestions.slice(0, 10);
         },
 
         setLang: function(l) {
-            this.startMusic();
             state.lang = l;
-            
-            // Seleccionar las 10 preguntas para esta partida
-            this.selectRandomQuestions();
+            this.selectRandomQuestions(); 
 
-            const txts = DATABASE[state.lang].ui;
-            document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
-            this.transicion(this.menuLang, this.gameUI);
-            this.startSnow();
-            this.loadQuestion();
+            // 1. Ocultar Menú
+            this.menuLang.setAttribute('visible', false);
+            this.menuLang.setAttribute('position', '0 -999 0');
+
+            // 2. Cambiar Sky estático por VideoSphere
+            this.staticSky.setAttribute('visible', false);
+            this.videoSphere.setAttribute('visible', true);
+
+            // 3. Reproducir Video
+            this.videoEl.currentTime = 0; 
+            this.videoEl.play();
+
+            // 4. Escuchar cuando termine el video
+            this.videoEl.onended = () => {
+                this.startTransitionToGame();
+            };
         },
 
-        // --- SISTEMA DE NIEVE / ESCARCHA ---
+        startTransitionToGame: function() {
+            // 1. Fundido a Negro (Fade Out del video)
+            this.blackFader.setAttribute('visible', true);
+            this.blackFader.setAttribute('animation', {
+                property: 'material.opacity',
+                from: 0,
+                to: 1,
+                dur: 1000,
+                easing: 'linear'
+            });
+
+            // AQUI ESTÁ EL CAMBIO: Esperamos 3 SEGUNDOS (3000ms) en pantalla negra
+            setTimeout(() => {
+                // 2. Preparar el escenario
+                this.videoSphere.setAttribute('visible', false); 
+                this.staticSky.setAttribute('visible', true);    
+                
+                const txts = DATABASE[state.lang].ui;
+                document.querySelector('#txt-restart').setAttribute('troika-text', 'value', txts.restart);
+                
+                this.gameUI.setAttribute('visible', true);
+                this.gameUI.setAttribute('position', '0 1.6 -4');
+                this.gameUI.setAttribute('scale', '1 1 1');
+
+                // 3. Iniciar lógica del juego
+                this.startMusic();
+                this.startSnow();
+                this.loadQuestion();
+
+                // 4. Fundido desde Negro (Fade In al juego)
+                this.blackFader.setAttribute('animation', {
+                    property: 'material.opacity',
+                    from: 1,
+                    to: 0,
+                    dur: 1000,
+                    easing: 'linear'
+                });
+
+                setTimeout(() => {
+                    this.blackFader.setAttribute('visible', false);
+                }, 1000);
+
+            }, 3000); // <--- AUMENTADO A 3000ms (3 segundos)
+        },
+
         startSnow: function() {
             const snowCount = 200; 
             for(let i=0; i<snowCount; i++) {
                 let flake = document.createElement('a-entity');
                 flake.setAttribute('geometry', 'primitive: sphere; radius: 0.03'); 
                 flake.setAttribute('material', 'shader: flat; color: #FFFFFF; opacity: 0.9');
-                
                 let x = (Math.random() * 16) - 8; 
                 let y = (Math.random() * 10) + 5; 
                 let z = (Math.random() * 10) - 8; 
-                
                 flake.setAttribute('position', `${x} ${y} ${z}`);
-                
                 let duration = 3000 + Math.random() * 4000;
-                
                 flake.setAttribute('animation', {
-                    property: 'position',
-                    to: `${x} -2 ${z}`,
-                    dur: duration,
-                    easing: 'linear',
-                    loop: true
+                    property: 'position', to: `${x} -2 ${z}`,
+                    dur: duration, easing: 'linear', loop: true
                 });
-                
-                flake.setAttribute('animation__wobble', {
-                    property: 'position',
-                    from: `${x} ${y} ${z}`,
-                    to: `${x + 0.2} ${y} ${z}`,
-                    dur: 1000,
-                    dir: 'alternate',
-                    loop: true,
-                    easing: 'easeInOutSine'
-                });
-
                 this.scene.appendChild(flake);
                 state.snowElements.push(flake);
             }
         },
 
-        // --- BARRA DE TIEMPO ---
         startTimer: function() {
             this.stopTimer(); 
             let timeLeft = 20;
@@ -251,7 +289,6 @@
             if(state.isAnswered) return;
             state.isAnswered = true;
             if(this.soundFail) this.soundFail.components.sound.playSound(); 
-            // USAR LA PREGUNTA DE LA LISTA ACTIVA
             const q = state.activeQuestions[state.qIndex];
             document.querySelector(`#btn-op-${q.ans}`).setAttribute('color', '#4CAF50'); 
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
@@ -260,7 +297,6 @@
         loadQuestion: function() {
             state.isAnswered = false;
             this.stopTimer();
-            // USAR LA LISTA ACTIVA (10 preguntas)
             const lista = state.activeQuestions;
             
             if(state.qIndex >= lista.length) { 
@@ -296,7 +332,6 @@
             if(state.isAnswered) return;
             state.isAnswered = true;
             this.stopTimer(); 
-            // USAR LA PREGUNTA DE LA LISTA ACTIVA
             const q = state.activeQuestions[state.qIndex];
             const btn = document.querySelector(`#btn-op-${idx}`);
             
@@ -312,7 +347,6 @@
             setTimeout(() => { state.qIndex++; this.loadQuestion(); }, 1500);
         },
 
-        // --- CONFETI NATIVO ---
         launchConfetti: function() {
             const colors = ['#FFC107', '#2196F3', '#FF5722', '#4CAF50', '#E91E63'];
             const confettiCount = 60; 
@@ -330,31 +364,22 @@
                 confeti.setAttribute('position', `${startX} ${startY} ${startZ}`);
                 
                 let duration = 3000 + Math.random() * 2000; 
-                
                 confeti.setAttribute('animation__fall', {
-                    property: 'position',
-                    to: `${startX} 0 ${startZ}`,
-                    dur: duration,
-                    easing: 'linear',
-                    loop: true
+                    property: 'position', to: `${startX} 0 ${startZ}`,
+                    dur: duration, easing: 'linear', loop: true
                 });
                 confeti.setAttribute('animation__spin', {
-                    property: 'rotation',
-                    to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
-                    dur: 2000,
-                    easing: 'linear',
-                    loop: true
+                    property: 'rotation', to: `${Math.random()*360} ${Math.random()*360} ${Math.random()*360}`,
+                    dur: 2000, easing: 'linear', loop: true
                 });
                 this.scene.appendChild(confeti);
                 state.confettiElements.push(confeti);
             }
         },
 
-        // --- PANTALLA FINAL ---
         showEndScreen: function() {
             this.stopTimer();
             this.transicion(this.gameUI, this.endUI);
-            // Usamos el total de preguntas jugadas (10)
             const total = state.activeQuestions.length; 
             
             const imgResultado = document.querySelector('#img-resultado');
@@ -364,20 +389,15 @@
             let colorScore = "#FFFFFF";
 
             if (state.score === total) {
-                imageName = "score-10.png"; 
-                colorScore = '#FFD700'; 
-                this.launchConfetti();
+                imageName = "score-10.png"; colorScore = '#FFD700'; this.launchConfetti();
             } else if (state.score >= (total * 0.8)) { 
-                imageName = "score-89.png";
-                colorScore = '#4CAF50'; 
+                imageName = "score-89.png"; colorScore = '#4CAF50'; 
             } else if (state.score >= (total * 0.4)) { 
-                imageName = "score-47.png";
-                colorScore = '#FFEB3B'; 
+                imageName = "score-47.png"; colorScore = '#FFEB3B'; 
             } else {
-                imageName = "score-03.png";
-                colorScore = '#D32F2F'; 
+                imageName = "score-03.png"; colorScore = '#D32F2F'; 
             }
-
+            
             imgResultado.setAttribute('src', imageName);
 
             txtFinal.setAttribute('troika-text', {
@@ -386,13 +406,8 @@
             });
             
             txtFinal.setAttribute('animation', {
-                property: 'scale',
-                from: '1 1 1',
-                to: '1.2 1.2 1.2',
-                dir: 'alternate',
-                dur: 600,
-                loop: true,
-                easing: 'easeInOutSine'
+                property: 'scale', from: '1 1 1', to: '1.2 1.2 1.2',
+                dir: 'alternate', dur: 600, loop: true, easing: 'easeInOutSine'
             });
         },
 
@@ -434,6 +449,9 @@
       <a-assets>
         <img id="fondo360" src="fondo360.jpg">
         <img id="logo" src="IW.png">
+        
+        <video id="vid-intro" src="tuvideo360.mp4" playsinline crossorigin="anonymous"></video>
+
         <audio id="src-music" src="musica.mp3" loop="true"></audio>
         <audio id="src-win" src="win.mp3"></audio>
         <audio id="src-fail" src="fail.mp3"></audio>
@@ -447,51 +465,42 @@
       <a-entity id="sound-win" sound="src: #src-win; volume: 3.0"></a-entity>
       <a-entity id="sound-fail" sound="src: #src-fail; volume: 3.0"></a-entity>
 
-      <a-sky src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
+      <a-sky id="sky-static" src="#fondo360" radius="60" rotation="0 -90 0"></a-sky>
+      <a-videosphere id="sphere-video" src="#vid-intro" radius="60" rotation="0 -90 0" visible="false"></a-videosphere>
+
       <a-light type="directional" position="-1 2 1" intensity="1"></a-light>
       <a-light type="ambient" intensity="1"></a-light>
 
       <a-entity id="rig">
-        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false"></a-camera>
+        <a-camera position="0 1.6 0" look-controls="pointerLockEnabled: false">
+            <a-entity id="black-fade" 
+                      geometry="primitive: sphere; radius: 0.1; segmentsWidth: 8; segmentsHeight: 8" 
+                      material="color: black; side: double; opacity: 0; transparent: true; shader: flat"
+                      visible="false"
+                      position="0 0 0">
+            </a-entity>
+        </a-camera>
         <a-entity hand-controls="hand: right" laser-controls="hand: right" raycaster="objects: .clickable; far: 10; lineColor: #B61F25"></a-entity>
         <a-entity hand-controls="hand: left"></a-entity>
       </a-entity>
 
       <a-entity id="menu-idioma">
         <a-entity animation="property: position; from: 0 0 0; to: 0 0.05 0; dir: alternate; dur: 3000; loop: true">
-            
-            <a-entity geometry="primitive: plane; width: 5; height: 5.5" 
-                      material="color: white; shader: flat" position="0 0 -0.1"></a-entity>
-            
+            <a-entity geometry="primitive: plane; width: 5; height: 5.5" material="color: white; shader: flat" position="0 0 -0.1"></a-entity>
             <a-image src="#logo" position="0 1.8 0.1" width="3" height="1.5"></a-image>
-            
-            <a-entity id="txt-bienvenida" mixin="txt-black" position="0 0.6 0.1" 
-                      troika-text="value: BIENVENIDO; fontSize: 0.5; color: #B61F25; outlineWidth: 0.005"></a-entity>
-            
-            <a-entity id="txt-subtitulo" mixin="txt-black" position="0 0 0.1" 
-                      troika-text="value: SEMANA INTERNACIONAL ESAN; fontSize: 0.28"></a-entity>
-            
-            <a-entity id="txt-instr" mixin="txt-black" position="0 -0.6 0.1" 
-                      troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
-
-            <a-entity id="txt-credits" mixin="txt-black" position="0 -0.9 0.1" 
-                      troika-text="value: Desarrollado por EsanLabs; fontSize: 0.15; color: #888; font-style: italic"></a-entity>
+            <a-entity id="txt-bienvenida" mixin="txt-black" position="0 0.6 0.1" troika-text="value: BIENVENIDO; fontSize: 0.5; color: #B61F25; outlineWidth: 0.005"></a-entity>
+            <a-entity id="txt-subtitulo" mixin="txt-black" position="0 0 0.1" troika-text="value: SEMANA INTERNACIONAL ESAN; fontSize: 0.28"></a-entity>
+            <a-entity id="txt-instr" mixin="txt-black" position="0 -0.6 0.1" troika-text="value: SELECCIONA TU IDIOMA; color: #555"></a-entity>
+            <a-entity id="txt-credits" mixin="txt-black" position="0 -0.9 0.1" troika-text="value: Desarrollado por EsanLabs; fontSize: 0.15; color: #888; font-style: italic"></a-entity>
 
             <a-entity position="0 -1.5 0">
-                <a-entity position="-1.4 0 0" 
-                          animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
-                    <a-box class="clickable" btn-action="type: lang; val: ES" 
-                           color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
-                    <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06" 
-                              troika-text="value: ESPAÑOL; fontSize: 0.35"></a-entity>
+                <a-entity position="-1.4 0 0" animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
+                    <a-box class="clickable" btn-action="type: lang; val: ES" color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
+                    <a-entity id="txt-btn-es" mixin="txt-white" position="0 0 0.06" troika-text="value: ESPAÑOL; fontSize: 0.35"></a-entity>
                 </a-entity>
-
-                <a-entity position="1.4 0 0"
-                          animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true; delay: 500">
-                    <a-box class="clickable" btn-action="type: lang; val: EN" 
-                           color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
-                    <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06" 
-                              troika-text="value: ENGLISH; fontSize: 0.35"></a-entity>
+                <a-entity position="1.4 0 0" animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true; delay: 500">
+                    <a-box class="clickable" btn-action="type: lang; val: EN" color="#B61F25" width="2.2" height="0.6" depth="0.1"></a-box>
+                    <a-entity id="txt-btn-en" mixin="txt-white" position="0 0 0.06" troika-text="value: ENGLISH; fontSize: 0.35"></a-entity>
                 </a-entity>
             </a-entity>
         </a-entity>
@@ -503,8 +512,7 @@
             <a-entity id="txt-contador" mixin="txt-white" position="0 0 0.06" troika-text="value: 1 / 10"></a-entity>
         </a-entity>
 
-        <a-entity geometry="primitive: plane; width: 6; height: 1.5" 
-                  material="color: white; shader: flat" position="0 1.2 -0.1"></a-entity>
+        <a-entity geometry="primitive: plane; width: 6; height: 1.5" material="color: white; shader: flat" position="0 1.2 -0.1"></a-entity>
         <a-entity id="txt-pregunta" mixin="txt-black" position="0 1.2 0.06" troika-text="fontSize: 0.3; value: Cargando..."></a-entity>
 
         <a-entity position="0 0.3 0">
@@ -529,23 +537,13 @@
       </a-entity>
 
       <a-entity id="ui-final" visible="false">
-        <a-entity geometry="primitive: plane; width: 5; height: 4" 
-                  material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
-        
+        <a-entity geometry="primitive: plane; width: 5; height: 4" material="color: white; shader: flat" position="0 0.5 -0.1"></a-entity>
         <a-image id="img-resultado" position="0 1.2 0.2" width="1.8" height="2.5"></a-image>
-
         <a-entity id="txt-score-final" mixin="txt-black" position="0 -0.3 0.2" troika-text="color: #4CAF50; fontSize: 0.4; value: 0 / 10"></a-entity>
-
-        <a-entity position="0 -1.0 0.2"
-                  animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
-            
-            <a-box class="clickable" btn-action="type: restart; val: 0" 
-                   color="#B61F25" width="2.5" height="0.6" depth="0.05"></a-box>
-                   
-            <a-entity id="txt-restart" mixin="txt-white" position="0 0 0.06" 
-                      troika-text="value: VOLVER A JUGAR; fontSize: 0.25"></a-entity>
+        <a-entity position="0 -1.0 0.2" animation="property: scale; to: 1.05 1.05 1.05; dir: alternate; dur: 1000; loop: true">
+            <a-box class="clickable" btn-action="type: restart; val: 0" color="#B61F25" width="2.5" height="0.6" depth="0.05"></a-box>
+            <a-entity id="txt-restart" mixin="txt-white" position="0 0 0.06" troika-text="value: VOLVER A JUGAR; fontSize: 0.25"></a-entity>
         </a-entity>
-
       </a-entity>
 
     </a-scene>
