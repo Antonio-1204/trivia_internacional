@@ -431,13 +431,13 @@
             let colorScore = "#FFFFFF";
 
             if (state.score === total) {
-                imageName = "score-10.png"; colorScore = '#FFD700'; this.launchConfetti();
+                imageName = "Imagenes/score-10.png"; colorScore = '#FFD700'; this.launchConfetti();
             } else if (state.score >= (total * 0.8)) { 
-                imageName = "score-89.png"; colorScore = '#4CAF50'; 
+                imageName = "Imagenes/score-89.png"; colorScore = '#4CAF50'; 
             } else if (state.score >= (total * 0.4)) { 
-                imageName = "score-47.png"; colorScore = '#FFEB3B'; 
+                imageName = "Imagenes/score-47.png"; colorScore = '#FFEB3B'; 
             } else {
-                imageName = "score-03.png"; colorScore = '#D32F2F'; 
+                imageName = "Imagenes/score-03.png"; colorScore = '#D32F2F'; 
             }
             
             imgResultado.setAttribute('src', imageName);
@@ -485,14 +485,14 @@
   <body>
     <a-scene game-logic cursor="rayOrigin: mouse" raycaster="objects: .clickable">
       <a-assets>
-        <img id="fondo360" src="fondo360.jpg">
-        <img id="logo" src="IW.png">
+        <img id="fondo360" src="Imagenes/fondo360.jpg">
+        <img id="logo" src="Imagenes/IW.png">
         
-        <video id="vid-intro" src="tuvideo360.mp4" playsinline crossorigin="anonymous"></video>
+        <video id="vid-intro" src="Video/tuvideo360.mp4" playsinline crossorigin="anonymous"></video>
 
-        <audio id="src-music" src="musica.mp3" loop="true"></audio>
-        <audio id="src-win" src="win.mp3"></audio>
-        <audio id="src-fail" src="fail.mp3"></audio>
+        <audio id="src-music" src="Efectos Sonido/musica.mp3" loop="true"></audio>
+        <audio id="src-win" src="Efectos Sonido/win.mp3"></audio>
+        <audio id="src-fail" src="Efectos Sonido/fail.mp3"></audio>
 
         <a-mixin id="btn-red" geometry="primitive: box; depth: 0.05; height: 0.5; width: 2.5" material="color: #B61F25"></a-mixin>
         <a-mixin id="txt-black" troika-text="align: center; color: #000; fontSize: 0.25; maxWidth: 4.8; outlineWidth: 0.0"></a-mixin>
@@ -596,4 +596,5 @@
     </a-scene>
   </body>
 </html>
+
 
